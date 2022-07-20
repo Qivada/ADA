@@ -1,2 +1,2 @@
 # ADA Public Repository
-Feedback such as feature requests and bug reports.
+Qivada ADA feedback such as feature requests and bug reports.
