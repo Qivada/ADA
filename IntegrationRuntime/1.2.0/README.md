@@ -1,4 +1,4 @@
-## ADA Integration Runtime requires following outbound connections to function
+# ADA Integration Runtime requires following outbound connections to function
 1. Azure West Europe Service Bus IP range
    - Download current IP ranges from: https://www.microsoft.com/en-us/download/details.aspx?id=56519
    - See IP ranges from section "ServiceBus.WestEurope"
@@ -6,7 +6,7 @@
    - Https port. TLS 1.2 is used for connection.
    - Ciphersuite of TLS 1.2 connection is determined from available chiphers from Windows Operating system ADA Integration Runtime is installed.
 
-## Azure West Europe Service Bus IP range (2022-07-01)
+# Azure West Europe Service Bus IP range (2022-07-01)
 ```
 {
     "name": "ServiceBus.WestEurope",
