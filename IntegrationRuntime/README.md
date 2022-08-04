@@ -14,11 +14,9 @@ ADA Integration Runtime is required for running ADA work flows on on-premise sid
      - Details: This port is used for the HTTP/REST API and for AMQP-over-WebSockets
 
 Remarks:
-- TLS 1.2 is used for outbound connection.
-- Ciphersuite of TLS 1.2 connection is determined from available chiphers from Windows Operating system ADA Integration Runtime is installed.
-- The HTTPS port is generally required for outbound communication also when AMQP is used over port 5671, because several management operations performed by the client SDKs and the acquisition of tokens from Azure Active Directory (when used) run over HTTPS.
-- The official Azure SDKs generally use the AMQP protocol for sending and receiving messages from Service Bus.
-- The AMQP-over-WebSockets protocol option runs over port TCP 443 just like the HTTP/REST API, but is otherwise functionally identical with plain AMQP. This option has higher initial connection latency because of extra handshake roundtrips and slightly more overhead as tradeoff for sharing the HTTPS port. If this mode is selected, TCP port 443 is sufficient for communication. 
+- TLS 1.2 is used for outbound connection. Ciphersuite of TLS 1.2 connection is determined from available chiphers from Windows Operating system ADA Integration Runtime is installed.
+- The HTTPS port TCP 443 is generally required for outbound communication also when AMQP is used over port TCP 5671, because several management operations performed by the client SDKs and the acquisition of tokens from Azure Active Directory (when used) run over HTTPS.
+- The AMQP-over-WebSockets protocol option runs over port TCP 443 just like the HTTP/REST API, but is otherwise functionally identical with plain AMQP. This option has higher initial connection latency because of extra handshake roundtrips and slightly more overhead as tradeoff for sharing the HTTPS port. If this mode is selected, TCP port TCP 443 is sufficient for communication. 
 
 ### Azure West Europe Service Bus IP range (2022-07-01)
 ```
