@@ -9,7 +9,7 @@ ADA Integration Runtime is required for running ADA work flows on on-premise sid
    - Protocol: AMQP
      - Ports: 5671, 5672
      - Details: AMQP with TLS. See AMQP protocol guide: https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-amqp-protocol-guide
-   - Protocol: HTTPS
+   - Protocol: AMQP-over-WebSockets
      - Ports: 443
      - Details: This port is used for the HTTP/REST API and for AMQP-over-WebSockets
 
