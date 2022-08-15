@@ -56,3 +56,11 @@ Remarks:
     ]
 }
 ```
+## Troubleshoot Outbound Connections
+1. Open Powershell
+2. Test connectivity with following commands
+   - wget sb-qivada-p-westeu-01.servicebus.windows.net
+   - tnc sb-qivada-p-westeu-01.servicebus.windows.net -port 443
+   - tnc sb-qivada-p-westeu-01.servicebus.windows.net -port 5671
+   - tnc sb-qivada-p-westeu-01.servicebus.windows.net -port 5672
+3. Notice that ports 5671 and 5672 are not required if 'AMQP-over-WebSockets' protocol is used. By default 'AMQP' protocol is used.
