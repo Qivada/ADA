@@ -41,17 +41,16 @@ from pyspark.sql.utils import AnalysisException
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App--ADA-Lab--id"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App--ADA-Lab--secret"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App--ADA-Lab--tenant-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __SECRET_NAME_BLOB_ACCOUNT = "blob-account"
 __SECRET_NAME_BLOB_ACCOUNT_KEY = "blob-account-key"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
-__DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
-__INGEST_PATH = __DATA_LAKE_URL + "/" + __INGEST_PATH
-__ARCHIVE_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_PATH
-__ARCHIVE_LOG_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_LOG_PATH
+__INGEST_PATH = "abfss://ingest@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __INGEST_PATH
+__ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_PATH
+__ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
 
 # Source blob storage authentication
 __BLOB_STORAGE_ACCOUNT = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT)
