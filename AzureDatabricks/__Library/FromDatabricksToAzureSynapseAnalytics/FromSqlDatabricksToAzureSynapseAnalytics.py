@@ -105,12 +105,6 @@ spark.conf.set("spark.databricks.sqldw.writeSemantics", "copy")
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
 
-# Blob storage (tempDir) authentication
-__BLOB_STORAGE_ACCOUNT = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT)
-__BLOB_STORAGE_KEY = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT_KEY)
-__BLOB_TEMP_CONTAINER = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_TEMP_CONTAINER)
-spark.conf.set("fs.azure.account.key." + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net", __BLOB_STORAGE_KEY)
-
 # Azure Synapse Analytics authentication
 __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING)
 
@@ -157,7 +151,7 @@ if str(__MAX_STRING_LENGTH).upper() != "MAX":
              .option("maxStrLength", __MAX_STRING_LENGTH) \
              .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
              .option("dbTable", __TABLE_NAME) \
-             .option("tempDir", "wasbs://" + __BLOB_TEMP_CONTAINER + "@" + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net/databricks") \
+             .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
              .save()
 else:
   print("Writing with optimized SQL connection. Using nvarchar(max)")
