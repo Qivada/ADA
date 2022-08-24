@@ -146,7 +146,8 @@ if str(__MAX_STRING_LENGTH).upper() != "MAX":
   dfAnalytics.write \
              .format("com.databricks.spark.sqldw") \
              .option("url", __SYNAPSE_JDBC) \
-             .option("forwardSparkAzureStorageCredentials", "true") \
+             .option("forwardSparkAzureStorageCredentials", "false") \
+             .option("useAzureMSI", "true") \
              .mode("overwrite") \
              .option("maxStrLength", __MAX_STRING_LENGTH) \
              .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
