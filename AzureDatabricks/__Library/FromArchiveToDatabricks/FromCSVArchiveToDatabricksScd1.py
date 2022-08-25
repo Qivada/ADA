@@ -140,27 +140,27 @@ except Exception as ex:
 
 # COMMAND ----------
 
-def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullSafe = False):
-  includeConditionJoin = False
-  conditionJoin = "AND"
-  condition = ""
-  
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += " " + conditionJoin + " "
-      
-    if nullSafe == False:
-      condition += sourceAlias + "." + columnName + " = " + targetAlias + "." + columnName
-    else:
-      condition += sourceAlias + "." + columnName + " <=> " + targetAlias + "." + columnName
-      
-    includeConditionJoin = True
+def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullSafe = True):
+    includeConditionJoin = False
+    conditionJoin = "AND"
+    condition = ""
     
-  return condition
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += " " + conditionJoin + " "
+            
+        if nullSafe == False:
+            condition += sourceAlias + "." + columnName + " = " + targetAlias + "." + columnName
+        else:
+            condition += sourceAlias + "." + columnName + " <=> " + targetAlias + "." + columnName
+            
+        includeConditionJoin = True
+        
+    return condition
 
 # COMMAND ----------
 
-def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = False):
+def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = True):
     condition = ""
     
     if columns is None:
