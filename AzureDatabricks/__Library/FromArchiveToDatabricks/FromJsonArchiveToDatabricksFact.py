@@ -146,23 +146,30 @@ except Exception as ex:
 
 # COMMAND ----------
 
-def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullSafe = False):
-  includeConditionJoin = False
-  conditionJoin = "AND"
-  condition = ""
-  
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += " " + conditionJoin + " "
-      
-    if nullSafe == False:
-      condition += sourceAlias + "." + columnName + " = " + targetAlias + "." + columnName
-    else:
-      condition += sourceAlias + "." + columnName + " <=> " + targetAlias + "." + columnName
-      
-    includeConditionJoin = True
+def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = False):
+    condition = ""
     
-  return condition
+    if columns is None:
+        return condition
+    
+    for partitionColumn in columns:
+        sPartitionValues = ""
+        
+        dfPartitionValues = dfSource.select(partitionColumn).distinct()
+        
+        partitionColumnStripped = partitionColumn.lstrip('`').rstrip('`')
+        
+        lPartitionValues = list(dfPartitionValues.select(partitionColumn).toPandas()[partitionColumnStripped])
+        
+        sPartitionValues = ",".join(f"'{pv}'" for pv in lPartitionValues if not str(pv).isnumeric())
+        
+        if sPartitionValues == "":
+            sPartitionValues = ",".join(str(pv) for pv in lPartitionValues)
+            
+        condition = condition + f" AND {targetAlias}.{partitionColumn} IN ({sPartitionValues})"
+    
+    print("Partition optimization:" + condition)
+    return condition
 
 # COMMAND ----------
 

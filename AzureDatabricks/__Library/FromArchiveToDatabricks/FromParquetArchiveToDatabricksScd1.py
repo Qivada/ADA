@@ -178,26 +178,29 @@ def getMatchCondition(columns, note, nullSafe = False):
 # COMMAND ----------
 
 def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = False):
-  condition = ""
-  
-  for partitionColumn in columns:
-    sPartitionValues = ""
-  
-    dfPartitionValues = dfSource.select(partitionColumn).distinct()
+    condition = ""
     
-    partitionColumnStripped = partitionColumn.lstrip('`').rstrip('`')
+    if columns is None:
+        return condition
     
-    lPartitionValues = list(dfPartitionValues.select(partitionColumn).toPandas()[partitionColumnStripped])
+    for partitionColumn in columns:
+        sPartitionValues = ""
+        
+        dfPartitionValues = dfSource.select(partitionColumn).distinct()
+        
+        partitionColumnStripped = partitionColumn.lstrip('`').rstrip('`')
+        
+        lPartitionValues = list(dfPartitionValues.select(partitionColumn).toPandas()[partitionColumnStripped])
+        
+        sPartitionValues = ",".join(f"'{pv}'" for pv in lPartitionValues if not str(pv).isnumeric())
+        
+        if sPartitionValues == "":
+            sPartitionValues = ",".join(str(pv) for pv in lPartitionValues)
+            
+        condition = condition + f" AND {targetAlias}.{partitionColumn} IN ({sPartitionValues})"
     
-    sPartitionValues = ",".join(f"'{pv}'" for pv in lPartitionValues if not str(pv).isnumeric())
-    
-    if sPartitionValues == "": 
-      sPartitionValues = ",".join(str(pv) for pv in lPartitionValues)
-    
-    condition = condition + f" AND {targetAlias}.{partitionColumn} IN ({sPartitionValues})"
-    
-  print("Partition optimization:" + condition)
-  return condition  
+    print("Partition optimization:" + condition)
+    return condition
 
 # COMMAND ----------
 
