@@ -43,9 +43,9 @@ import gc
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App--ADA-Lab--id"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App--ADA-Lab--secret"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App--ADA-Lab--tenant-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 __DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
@@ -70,9 +70,9 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 
 def renameFolder(fileSystem, sourceFolder, targetFolder):
   token_credential = ClientSecretCredential(
-    dbutils.secrets.get(scope = "Lab", key = "App--ADA-Lab--tenant-id"),
-    dbutils.secrets.get(scope = "Lab", key = "App--ADA-Lab--id"),
-    dbutils.secrets.get(scope = "Lab", key = "App--ADA-Lab--secret"),
+    dbutils.secrets.get(scope = "Lab", key = "App-databricks-id"),
+    dbutils.secrets.get(scope = "Lab", key = "App-databricks-secret"),
+    dbutils.secrets.get(scope = "Lab", key = "App-databricks-tenant-id"),
   )
 
   datalake_service_client = DataLakeServiceClient("https://{}.dfs.core.windows.net".format(__DATA_LAKE_NAME), credential=token_credential)

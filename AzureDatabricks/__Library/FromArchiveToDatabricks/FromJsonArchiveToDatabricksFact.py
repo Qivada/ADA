@@ -102,9 +102,9 @@ spark.sql("SET spark.databricks.delta.merge.repartitionBeforeWrite.enabled = tru
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App--ADA-Lab--id"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App--ADA-Lab--secret"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App--ADA-Lab--tenant-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 __DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
@@ -147,47 +147,50 @@ except Exception as ex:
 
 # COMMAND ----------
 
-def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullSafe = False):
-  includeConditionJoin = False
-  conditionJoin = "AND"
-  condition = ""
-  
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += " " + conditionJoin + " "
-      
-    if nullSafe == False:
-      condition += sourceAlias + "." + columnName + " = " + targetAlias + "." + columnName
-    else:
-      condition += sourceAlias + "." + columnName + " <=> " + targetAlias + "." + columnName
-      
-    includeConditionJoin = True
+def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullSafe = True):
+    includeConditionJoin = False
+    conditionJoin = "AND"
+    condition = ""
     
-  return condition
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += " " + conditionJoin + " "
+            
+        if nullSafe == False:
+            condition += sourceAlias + "." + columnName + " = " + targetAlias + "." + columnName
+        else:
+            condition += sourceAlias + "." + columnName + " <=> " + targetAlias + "." + columnName
+            
+        includeConditionJoin = True
+    
+    return condition
 
 # COMMAND ----------
 
-def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = False):
-  condition = ""
-  
-  for partitionColumn in columns:
-    sPartitionValues = ""
-  
-    dfPartitionValues = dfSource.select(partitionColumn).distinct()
+def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe = True):
+    condition = ""
     
-    partitionColumnStripped = partitionColumn.lstrip('`').rstrip('`')
+    if columns is None:
+        return condition
     
-    lPartitionValues = list(dfPartitionValues.select(partitionColumn).toPandas()[partitionColumnStripped])
-    
-    sPartitionValues = ",".join(f"'{pv}'" for pv in lPartitionValues if not str(pv).isnumeric())
-    
-    if sPartitionValues == "": 
-      sPartitionValues = ",".join(str(pv) for pv in lPartitionValues)
-    
-    condition = condition + f" AND {targetAlias}.{partitionColumn} IN ({sPartitionValues})"
-    
-  print("Partition optimization:" + condition)
-  return condition  
+    for partitionColumn in columns:
+        sPartitionValues = ""
+        
+        dfPartitionValues = dfSource.select(partitionColumn).distinct()
+        
+        partitionColumnStripped = partitionColumn.lstrip('`').rstrip('`')
+        
+        lPartitionValues = list(dfPartitionValues.select(partitionColumn).toPandas()[partitionColumnStripped])
+        
+        sPartitionValues = ",".join(f"'{pv}'" for pv in lPartitionValues if not str(pv).isnumeric())
+        
+        if sPartitionValues == "": 
+            sPartitionValues = ",".join(str(pv) for pv in lPartitionValues)
+            
+        condition = condition + f" AND {targetAlias}.{partitionColumn} IN ({sPartitionValues})"
+        
+    print("Partition optimization:" + condition)
+    return condition  
 
 # COMMAND ----------
 

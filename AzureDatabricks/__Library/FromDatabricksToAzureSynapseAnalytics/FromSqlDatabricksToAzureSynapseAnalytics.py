@@ -75,17 +75,16 @@ from datetime import datetime, timedelta
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App--ADA-Lab--id"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App--ADA-Lab--secret"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App--ADA-Lab--tenant-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __SECRET_NAME_BLOB_ACCOUNT = "blob-account"
 __SECRET_NAME_BLOB_ACCOUNT_KEY = "blob-account-key"
 __SECRET_NAME_BLOB_TEMP_CONTAINER = "blob-temp-container"
 __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING = "Synapse-JDBC-connection-string"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
-__DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
-__TARGET_LOG_PATH = __DATA_LAKE_URL + "/" + __TARGET_LOG_PATH + "/processDatetime/"
+__TARGET_LOG_PATH = "abfss://synapse@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_LOG_PATH + "/processDatetime/"
 
 # Data lake authentication
 spark.conf.set("fs.azure.account.auth.type." + __DATA_LAKE_NAME + ".dfs.core.windows.net", "OAuth")
@@ -105,12 +104,6 @@ spark.conf.set("spark.databricks.sqldw.writeSemantics", "copy")
 # To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
-
-# Blob storage (tempDir) authentication
-__BLOB_STORAGE_ACCOUNT = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT)
-__BLOB_STORAGE_KEY = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT_KEY)
-__BLOB_TEMP_CONTAINER = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_TEMP_CONTAINER)
-spark.conf.set("fs.azure.account.key." + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net", __BLOB_STORAGE_KEY)
 
 # Azure Synapse Analytics authentication
 __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING)
@@ -153,12 +146,13 @@ if str(__MAX_STRING_LENGTH).upper() != "MAX":
   dfAnalytics.write \
              .format("com.databricks.spark.sqldw") \
              .option("url", __SYNAPSE_JDBC) \
-             .option("forwardSparkAzureStorageCredentials", "true") \
+             .option("forwardSparkAzureStorageCredentials", "false") \
+             .option("useAzureMSI", "true") \
              .mode("overwrite") \
              .option("maxStrLength", __MAX_STRING_LENGTH) \
              .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
              .option("dbTable", __TABLE_NAME) \
-             .option("tempDir", "wasbs://" + __BLOB_TEMP_CONTAINER + "@" + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net/databricks") \
+             .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
              .save()
 else:
   print("Writing with optimized SQL connection. Using nvarchar(max)")

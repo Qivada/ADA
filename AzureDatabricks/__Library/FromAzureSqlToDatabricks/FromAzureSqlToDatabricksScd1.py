@@ -85,13 +85,12 @@ spark.sql("SET spark.databricks.delta.merge.repartitionBeforeWrite.enabled = tru
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App--ADA-Lab--id"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App--ADA-Lab--secret"
-__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App--ADA-Lab--tenant-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
+__SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
-__DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
-__TARGET_PATH = __DATA_LAKE_URL + "/" + __TARGET_PATH
+__TARGET_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_PATH
 
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
