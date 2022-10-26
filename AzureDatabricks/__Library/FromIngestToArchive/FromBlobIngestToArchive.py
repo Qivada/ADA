@@ -73,28 +73,28 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 # COMMAND ----------
 
 def archiveFile(file, archivePath):
-  archiveLogEntry = []
+    archiveLogEntry = []
     
-  if file.path.endswith('.partial') == True:
-    # Do not handle files with '.partial' suffix. The suffix means that the file is not yet fully uploaded
-    return archiveLogEntry   
+    if file.path.endswith('.partial') == True:
+        # Do not handle files with '.partial' suffix. The suffix means that the file is not yet fully uploaded
+        return archiveLogEntry   
     
-  if file.size == 0:
-    # Do not archive empty files
-    return archiveLogEntry
+    if file.size == 0:
+        # Do not archive empty files
+        return archiveLogEntry
     
-  # 1. Create unique archive name and location
-  fileName, fileExtension = os.path.splitext(file.path)
-  archiveDatetime = datetime.utcnow()
-  archiveFileName = archiveDatetime.strftime("%H_%M") + "_" + str(uuid.uuid4()) + fileExtension
-  archiveFilePath = archivePath + "/" + archiveDatetime.strftime("%Y/%m/%d") + "/" + archiveFileName
+    # 1. Create unique archive name and location
+    fileName, fileExtension = os.path.splitext(file.path)
+    archiveDatetime = datetime.utcnow()
+    archiveFileName = archiveDatetime.strftime("%H_%M") + "_" + str(uuid.uuid4()) + fileExtension
+    archiveFilePath = archivePath + "/" + archiveDatetime.strftime("%Y/%m/%d") + "/" + archiveFileName
   
-  # 2. Copy file to the archive location from staging
-  dbutils.fs.cp(file.path, archiveFilePath)
-  print("Staged file '" + file.path +  "' archived to '" + archiveFilePath + "'")
+    # 2. Copy file to the archive location from staging
+    dbutils.fs.cp(file.path, archiveFilePath)
+    print("Staged file '" + file.path +  "' archived to '" + archiveFilePath + "'")
   
-  # 3. Create archive log entry
-  archiveLogEntry.append({
+    # 3. Create archive log entry
+    archiveLogEntry.append({
       'ArchiveDatetimeUTC': archiveDatetime,
       'ArchiveYearUTC': int(archiveDatetime.year),
       'ArchiveMonthUTC': int(archiveDatetime.month),
@@ -107,20 +107,20 @@ def archiveFile(file, archivePath):
       'ArchiveFileName': archiveFileName
     })
   
-  return archiveLogEntry
+    return archiveLogEntry
 
 # COMMAND ----------
 
 archiveLogs = []
 with parallel_backend('threading', n_jobs=10):
-  # 1. Copy file into archive and create in-memory archive log dataset
-  result_archiveLogs = Parallel()(delayed(archiveFile)(file, __ARCHIVE_PATH) for file in dbutils.fs.ls("wasbs://" + __CONTAINER + "@" + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net/" + __INGEST_PATH))
-  [archiveLogs.extend(el) for el in result_archiveLogs]
+    # 1. Copy file into archive and create in-memory archive log dataset
+    result_archiveLogs = Parallel()(delayed(archiveFile)(file, __ARCHIVE_PATH) for file in dbutils.fs.ls("wasbs://" + __CONTAINER + "@" + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net/" + __INGEST_PATH))
+    [archiveLogs.extend(el) for el in result_archiveLogs]
 
 if archiveLogs:
-  # 2. Commit in-memory archive log dataset into delta table
-  print('Commit archive log: ' + __ARCHIVE_LOG_PATH)
-  dfArchiveLogs = spark.createDataFrame(pd.DataFrame(archiveLogs)) \
+    # 2. Commit in-memory archive log dataset into delta table
+    print('Commit archive log: ' + __ARCHIVE_LOG_PATH)
+    dfArchiveLogs = spark.createDataFrame(pd.DataFrame(archiveLogs)) \
                        .selectExpr("CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(ArchiveYearUTC AS int) AS ArchiveYearUTC", \
                                    "CAST(ArchiveMonthUTC AS int) AS ArchiveMonthUTC", \
@@ -136,42 +136,42 @@ if archiveLogs:
                                    "CAST(0 AS boolean) AS IsIgnorable", \
                                    "CAST(NULL AS string) AS Notes")
 
-  try:
-    dfArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
-                       .format("delta") \
-                       .mode("append") \
-                       .option("mergeSchema", "true") \
-                       .save(__ARCHIVE_LOG_PATH)
-  except AnalysisException as err:
-    if str(err).find("OriginalStagingFileSize") != -1:
-      print("Preparing to fix OriginalStagingFileSize data type")
-      dfFixedArchiveLogs = spark.sql('SELECT * FROM delta.`' + __ARCHIVE_LOG_PATH + '`')
-      dfFixedArchiveLogs = dfFixedArchiveLogs.withColumn("OriginalStagingFileSize", col("OriginalStagingFileSize").cast("long"))
-      dfFixedArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
-                        .format("delta") \
-                        .mode("overwrite") \
-                        .option("overwriteSchema", "true") \
-                        .save(__ARCHIVE_LOG_PATH)
-      print("Fixed OriginalStagingFileSize data type")
-      print('Retrying commit archive log: ' + __ARCHIVE_LOG_PATH)
-      dfArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
-                       .format("delta") \
-                       .mode("append") \
-                       .save(__ARCHIVE_LOG_PATH)
-      pass
-    else:
-      raise
-  except:
-      raise
+    try:
+        dfArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
+                           .format("delta") \
+                           .mode("append") \
+                           .option("mergeSchema", "true") \
+                           .save(__ARCHIVE_LOG_PATH)
+    except AnalysisException as err:
+        if str(err).find("OriginalStagingFileSize") != -1:
+            print("Preparing to fix OriginalStagingFileSize data type")
+            dfFixedArchiveLogs = spark.sql('SELECT * FROM delta.`' + __ARCHIVE_LOG_PATH + '`')
+            dfFixedArchiveLogs = dfFixedArchiveLogs.withColumn("OriginalStagingFileSize", col("OriginalStagingFileSize").cast("long"))
+            dfFixedArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
+                            .format("delta") \
+                            .mode("overwrite") \
+                            .option("overwriteSchema", "true") \
+                            .save(__ARCHIVE_LOG_PATH)
+            print("Fixed OriginalStagingFileSize data type")
+            print('Retrying commit archive log: ' + __ARCHIVE_LOG_PATH)
+            dfArchiveLogs.write.partitionBy("ArchiveyyyyMMddUTC") \
+                           .format("delta") \
+                           .mode("append") \
+                           .save(__ARCHIVE_LOG_PATH)
+            pass
+        else:
+            raise
+    except:
+        raise
 
-  # 3. Remove archived files
-  print("Remove archived files from staging")
-  with parallel_backend('threading', n_jobs=10):
-    Parallel()(delayed(dbutils.fs.rm)((archiveLogRow['OriginalStagingFilePath'])) for archiveLogRow in archiveLogs)
+    # 3. Remove archived files
+    print("Remove archived files from staging")
+    with parallel_backend('threading', n_jobs=10):
+        Parallel()(delayed(dbutils.fs.rm)((archiveLogRow['OriginalStagingFilePath'])) for archiveLogRow in archiveLogs)
   
-  # 4. Optimize archive log
-  print('Optimize archive log: ' + __ARCHIVE_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __ARCHIVE_LOG_PATH + '`').display()
+    # 4. Optimize archive log
+    print('Optimize archive log: ' + __ARCHIVE_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __ARCHIVE_LOG_PATH + '`').display()
 
 # COMMAND ----------
 

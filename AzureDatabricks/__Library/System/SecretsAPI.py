@@ -35,9 +35,9 @@ response = requests.get('https://' + databricksInstance + '.azuredatabricks.net/
               })
 
 try:
-  print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
+    print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
 except Exception as e:
-  print(e)
+    print(e)
 
 # COMMAND ----------
 
@@ -54,9 +54,9 @@ response = requests.get('https://' + databricksInstance + '.azuredatabricks.net/
               data="{\"scope\": \"" + __SECRET_SCOPE + "\"}")
 
 try:
-  print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
+    print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
 except Exception as e:
-  print(e)
+    print(e)
 
 # COMMAND ----------
 
@@ -79,9 +79,9 @@ response = requests.post('https://' + databricksInstance + '.azuredatabricks.net
               data="{\"scope\": \"" + __SECRET_SCOPE + "\", \"principal\": \"" + __ACL_PRINCIPAL + "\", \"permission\": \"" + __ACL_PERMISSION + "\"}")
 
 try:
-  print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
+    print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
 except Exception as e:
-  print(e)
+    print(e)
 
 # COMMAND ----------
 
@@ -101,6 +101,6 @@ response = requests.post('https://' + databricksInstance + '.azuredatabricks.net
               data="{\"scope\": \"" + __SECRET_SCOPE + "\", \"principal\": \"" + __ACL_PRINCIPAL + "\", \"permission\": \"" + __ACL_PERMISSION + "\"}")
 
 try:
-  print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
+    print(json.dumps(json.loads(response.text), indent=4, sort_keys=True))
 except Exception as e:
-  print(e)
+    print(e)
