@@ -78,9 +78,6 @@ __SECRET_SCOPE = "KeyVault"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
-__SECRET_NAME_BLOB_ACCOUNT = "blob-account"
-__SECRET_NAME_BLOB_ACCOUNT_KEY = "blob-account-key"
-__SECRET_NAME_BLOB_TEMP_CONTAINER = "blob-temp-container"
 __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING = "Synapse-JDBC-connection-string"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 
@@ -113,19 +110,19 @@ __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME
 # Get process datetimes
 lastProcessDatetimeUTC = None
 try:
-  dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
-  lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
-  print("Using existing log with date: " + str(lastProcessDatetimeUTC))
+    dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
+    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
+    print("Using existing log with date: " + str(lastProcessDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
-  print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
+    print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -142,8 +139,8 @@ queryBeginsDatetimeUTC = datetime.utcnow()
 dfAnalytics = spark.sql("SELECT * FROM (" + __SOURCE_SQL + ") AS sourceSQL WHERE `" + __SOURCE_TRACK_DATE_COLUMN + "` " + (__INCLUDE_PREVIOUS == "True" and ">=" or ">") + " CAST('" + str(lastProcessDatetimeUTC) + "' AS timestamp)")
 
 if str(__MAX_STRING_LENGTH).upper() != "MAX":
-  print("Writing with optimized SQL connection")
-  dfAnalytics.write \
+    print("Writing with optimized SQL connection")
+    dfAnalytics.write \
              .format("com.databricks.spark.sqldw") \
              .option("url", __SYNAPSE_JDBC) \
              .option("forwardSparkAzureStorageCredentials", "false") \
@@ -155,13 +152,13 @@ if str(__MAX_STRING_LENGTH).upper() != "MAX":
              .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
              .save()
 else:
-  print("Writing with optimized SQL connection. Using nvarchar(max)")
-  df_schema = spark.createDataFrame([], dfAnalytics.schema)
-  df_schema.write \
-           .option("createTableOptions", "WITH(DISTRIBUTION = " + __DISTRIBUTION + ", HEAP)" ) \
-           .option("batchsize", 1 ) \
-           .jdbc(url=__SYNAPSE_JDBC, table=__TABLE_NAME, mode="overwrite")
-  dfAnalytics.write \
+    print("Writing with optimized SQL connection. Using nvarchar(max)")
+    df_schema = spark.createDataFrame([], dfAnalytics.schema)
+    df_schema.write \
+             .option("createTableOptions", "WITH(DISTRIBUTION = " + __DISTRIBUTION + ", HEAP)" ) \
+             .option("batchsize", 1 ) \
+             .jdbc(url=__SYNAPSE_JDBC, table=__TABLE_NAME, mode="overwrite")
+    dfAnalytics.write \
              .format("com.databricks.spark.sqldw") \
              .option("url", __SYNAPSE_JDBC) \
              .option("forwardSparkAzureStorageCredentials", "false") \
@@ -182,9 +179,9 @@ maxDatetimeUTC = spark.sql("""
         `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").rdd.max()[0]
 
 if maxDatetimeUTC:
-  # Save max. archive datetime to target process datetime log
-  dfProcessDatetime = spark.sql("SELECT CAST('" + str(maxDatetimeUTC) + "' AS timestamp) AS ProcessDatetime")
-  dfProcessDatetime.write.format("delta") \
+    # Save max. archive datetime to target process datetime log
+    dfProcessDatetime = spark.sql("SELECT CAST('" + str(maxDatetimeUTC) + "' AS timestamp) AS ProcessDatetime")
+    dfProcessDatetime.write.format("delta") \
                          .mode("append") \
                          .save(__TARGET_LOG_PATH)
 
