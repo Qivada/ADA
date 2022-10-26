@@ -83,9 +83,6 @@ __SECRET_SCOPE = "KeyVault"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_ID = "App-databricks-id"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
-__SECRET_NAME_BLOB_ACCOUNT = "blob-account"
-__SECRET_NAME_BLOB_ACCOUNT_KEY = "blob-account-key"
-__SECRET_NAME_BLOB_TEMP_CONTAINER = "blob-temp-container"
 __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING = "Synapse-JDBC-connection-string"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 
@@ -113,12 +110,6 @@ spark.conf.set("spark.databricks.sqldw.writeSemantics", "copy")
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
 spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
 
-# Blob storage (tempDir) authentication
-__BLOB_STORAGE_ACCOUNT = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT)
-__BLOB_STORAGE_KEY = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT_KEY)
-__BLOB_TEMP_CONTAINER = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_TEMP_CONTAINER)
-spark.conf.set("fs.azure.account.key." + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net", __BLOB_STORAGE_KEY)
-
 # Azure Synapse Analytics authentication
 __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING)
 
@@ -127,19 +118,19 @@ __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+      lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -159,8 +150,9 @@ processLogs = []
 dfAnalytics = None
 dfStaticArchiveLogs = dfArchiveLogs.collect()
 for archiveLog in dfStaticArchiveLogs:
-  print("Processing file: " + archiveLog.ArchiveFilePath)  
-  processLogs.append({
+    print("Processing file: " + archiveLog.ArchiveFilePath)
+    
+    processLogs.append({
       'ProcessDatetime': datetime.utcnow(),
       'ArchiveDatetimeUTC': archiveLog.ArchiveDatetimeUTC,
       'OriginalStagingFilePath': archiveLog.OriginalStagingFilePath,
@@ -168,65 +160,66 @@ for archiveLog in dfStaticArchiveLogs:
       'OriginalStagingFileSize': archiveLog.OriginalStagingFileSize,
       'ArchiveFilePath': archiveLog.ArchiveFilePath,
       'ArchiveFileName': archiveLog.ArchiveFileName
-  })
-  
-  try:
-    # Select from archive and save to target
-    dfArchive = spark.read.format("csv")\
-                       .option("header", "true")\
-                       .option("delimiter", __CSV_DELIMITER)\
-                       .load(archiveLog.ArchiveFilePath)\
-                       .select(__EXTRACT_COLUMNS) \
-                       .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-                       .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
+    })
+    
+    try:
+        # Select from archive and save to target
+        dfArchive = spark.read.format("csv")\
+                           .option("header", "true")\
+                           .option("delimiter", __CSV_DELIMITER)\
+                           .load(archiveLog.ArchiveFilePath)\
+                           .select(__EXTRACT_COLUMNS) \
+                           .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                           .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
 
-    # Remove empty spaces from column names as those are not supported
-    renamed_column_list = list(map(lambda x: x.replace(" ", "_"), dfArchive.columns))
-    dfArchive = dfArchive.toDF(*renamed_column_list)
-    
-    dfArchive.write.mode("append").parquet(__TARGET_TEMP_PATH)    
-  except:
-    print("Could not process file.")
-    
+        # Remove empty spaces from column names as those are not supported
+        renamed_column_list = list(map(lambda x: x.replace(" ", "_"), dfArchive.columns))
+        dfArchive = dfArchive.toDF(*renamed_column_list)
+
+        dfArchive.write.mode("append").parquet(__TARGET_TEMP_PATH)
+    except:
+        print("Could not process file.")
+        
 if dfStaticArchiveLogs:
-  dfAnalytics = spark.read.option("mergeSchema", "true").parquet(__TARGET_TEMP_PATH)
-  
-  if str(__MAX_STRING_LENGTH).upper() != "MAX":
-    print("Writing with optimized SQL connection")
-    dfAnalytics.write \
-               .format("com.databricks.spark.sqldw") \
-               .option("url", __SYNAPSE_JDBC) \
-               .option("forwardSparkAzureStorageCredentials", "true") \
-               .mode("overwrite") \
-               .option("maxStrLength", __MAX_STRING_LENGTH) \
-               .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
-               .option("dbTable", __TABLE_NAME) \
-               .option("tempDir", "wasbs://" + __BLOB_TEMP_CONTAINER + "@" + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net/databricks") \
-               .save()
-  else:
-    print("Writing with optimized SQL connection. Using nvarchar(max)")
-    df_schema = spark.createDataFrame([], dfAnalytics.schema)
-    df_schema.write \
-             .option("createTableOptions", "WITH(DISTRIBUTION = " + __DISTRIBUTION + ", HEAP)" ) \
-             .option("batchsize", 1 ) \
-             .jdbc(url=__SYNAPSE_JDBC, table=__TABLE_NAME, mode="overwrite")
-    dfAnalytics.write \
-               .format("com.databricks.spark.sqldw") \
-               .option("url", __SYNAPSE_JDBC) \
-               .option("forwardSparkAzureStorageCredentials", "false") \
-               .option("useAzureMSI", "true") \
-               .mode("append") \
-               .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
-               .option("dbTable", __TABLE_NAME) \
-               .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
-               .save()
-
-  dbutils.fs.rm(__TARGET_TEMP_PATH, True)
+    dfAnalytics = spark.read.option("mergeSchema", "true").parquet(__TARGET_TEMP_PATH)
+    
+    if str(__MAX_STRING_LENGTH).upper() != "MAX":
+        print("Writing with optimized SQL connection")
+        dfAnalytics.write \
+                   .format("com.databricks.spark.sqldw") \
+                   .option("url", __SYNAPSE_JDBC) \
+                   .option("forwardSparkAzureStorageCredentials", "false") \
+                   .option("useAzureMSI", "true") \
+                   .mode("overwrite") \
+                   .option("maxStrLength", __MAX_STRING_LENGTH) \
+                   .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
+                   .option("dbTable", __TABLE_NAME) \
+                   .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
+                   .save()
+    else:
+        print("Writing with optimized SQL connection. Using nvarchar(max)")
+        df_schema = spark.createDataFrame([], dfAnalytics.schema)
+        df_schema.write \
+                 .option("createTableOptions", "WITH(DISTRIBUTION = " + __DISTRIBUTION + ", HEAP)" ) \
+                 .option("batchsize", 1 ) \
+                 .jdbc(url=__SYNAPSE_JDBC, table=__TABLE_NAME, mode="overwrite")
+        dfAnalytics.write \
+                   .format("com.databricks.spark.sqldw") \
+                   .option("url", __SYNAPSE_JDBC) \
+                   .option("forwardSparkAzureStorageCredentials", "false") \
+                   .option("useAzureMSI", "true") \
+                   .mode("append") \
+                   .option("tableOptions", "DISTRIBUTION = " + __DISTRIBUTION + ", HEAP") \
+                   .option("dbTable", __TABLE_NAME) \
+                   .option("tempDir", "abfss://databricks@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/temp") \
+                   .save()
+            
+    dbutils.fs.rm(__TARGET_TEMP_PATH, True)
 
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -234,13 +227,14 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
     
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
 # COMMAND ----------
 
