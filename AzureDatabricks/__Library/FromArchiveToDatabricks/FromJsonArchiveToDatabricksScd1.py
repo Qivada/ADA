@@ -123,19 +123,19 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -222,22 +222,22 @@ __EXCLUDE_COLUMNS = ["`" + x.strip() + "`" for x in __EXCLUDE_COLUMNS.split(',')
 print("Excluded columns: " + ", ".join(__EXCLUDE_COLUMNS))
 
 if __PARTITION_BY_COLUMNS_PRE_SQL != "":
-  print("Partition by columns pre SQL: " + __PARTITION_BY_COLUMNS_PRE_SQL)
+    print("Partition by columns pre SQL: " + __PARTITION_BY_COLUMNS_PRE_SQL)
 
 if __PARTITION_BY_COLUMNS != '':
-  __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
-  __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
-  print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
+    __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
+    __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
+    print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
 else:
-  __PARTITION_BY_COLUMNS = None
+    __PARTITION_BY_COLUMNS = None
 
 print("Update filter: " + __UPDATE_FILTER)
   
 processLogs = []
 dfStaticArchiveLogs = dfArchiveLogs.collect()
 for archiveLog in dfStaticArchiveLogs:
-  print("Processing file: " + archiveLog.ArchiveFilePath)
-  processLogs.append({
+    print("Processing file: " + archiveLog.ArchiveFilePath)
+    processLogs.append({
       'ProcessDatetime': datetime.utcnow(),
       'ArchiveDatetimeUTC': archiveLog.ArchiveDatetimeUTC,
       'OriginalStagingFilePath': archiveLog.OriginalStagingFilePath,
@@ -245,84 +245,83 @@ for archiveLog in dfStaticArchiveLogs:
       'OriginalStagingFileSize': archiveLog.OriginalStagingFileSize,
       'ArchiveFilePath': archiveLog.ArchiveFilePath,
       'ArchiveFileName': archiveLog.ArchiveFileName
-  })
+    })
   
-  # Read JSON file as it is
-  dfSource = spark.read.json(archiveLog.ArchiveFilePath)
+    # Read JSON file as it is
+    dfSource = spark.read.json(archiveLog.ArchiveFilePath)
   
-  if __COMPLEX_AS_STRING.strip().upper() == 'TRUE':
-    # Convert all columns with data type 'array' or 'struct' to data type string
-    dfSource = dfSource.select(*[col(c[0]).cast((c[1].startswith("array<") or c[1].startswith("struct")) and 'string' or c[1]) for c in dfSource.dtypes])
+    if __COMPLEX_AS_STRING.strip().upper() == 'TRUE':
+        # Convert all columns with data type 'array' or 'struct' to data type string
+        dfSource = dfSource.select(*[col(c[0]).cast((c[1].startswith("array<") or c[1].startswith("struct")) and 'string' or c[1]) for c in dfSource.dtypes])
   
-  if __EXTRACT_COLUMNS != '*' or __PARTITION_BY_COLUMNS_PRE_SQL != "":
-    # Create temporary view for JSON data
-    dfSourceViewName = 'temp_' + str(uuid.uuid4()).replace('-', '_')
-    dfSource.createOrReplaceTempView(dfSourceViewName)
+    if __EXTRACT_COLUMNS != '*' or __PARTITION_BY_COLUMNS_PRE_SQL != "":
+        # Create temporary view for JSON data
+        dfSourceViewName = 'temp_' + str(uuid.uuid4()).replace('-', '_')
+        dfSource.createOrReplaceTempView(dfSourceViewName)
 
-    # Query data from temporary view
-    if __PARTITION_BY_COLUMNS_PRE_SQL == "":
-      dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM `" + dfSourceViewName + "`")      
-    else:
-      dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + ", " + __PARTITION_BY_COLUMNS_PRE_SQL + " FROM `" + dfSourceViewName + "`")
+        # Query data from temporary view
+        if __PARTITION_BY_COLUMNS_PRE_SQL == "":
+            dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM `" + dfSourceViewName + "`")      
+        else:
+            dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + ", " + __PARTITION_BY_COLUMNS_PRE_SQL + " FROM `" + dfSourceViewName + "`")
 
-    # Drop temporary view
-    try:
-      spark.catalog.dropTempView(dfSourceViewName)
-    except:
-      pass
-    pass
+        # Drop temporary view
+        try:
+            spark.catalog.dropTempView(dfSourceViewName)
+        except:
+            pass
   
-  for columnToExclude in __EXCLUDE_COLUMNS:
-    dfSource = dfSource.drop(col(columnToExclude))
+    for columnToExclude in __EXCLUDE_COLUMNS:
+        dfSource = dfSource.drop(col(columnToExclude))
     
-  dfSource = dfSource.withColumn('__tempStringForHashDiff', to_json(struct(col("*"))))
-  dfSource = dfSource.withColumn("__HashDiff", sha2(col("__tempStringForHashDiff"), 256))
-  dfSource = dfSource.drop(col("__tempStringForHashDiff"))
-  datetimeUtcNow = datetime.utcnow()
+    dfSource = dfSource.withColumn('__tempStringForHashDiff', to_json(struct(col("*"))))
+    dfSource = dfSource.withColumn("__HashDiff", sha2(col("__tempStringForHashDiff"), 256))
+    dfSource = dfSource.drop(col("__tempStringForHashDiff"))
+    datetimeUtcNow = datetime.utcnow()
   
-  if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
-    print("Initial table creation")
-    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
+    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
+        print("Initial table creation")
+        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
     
-    if __PARTITION_BY_COLUMNS is None:
-      # Initial table creation without partition
-      dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-              .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-              .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-              .write.format("delta") \
-              .option("path", __TARGET_PATH) \
-              .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+        if __PARTITION_BY_COLUMNS is None:
+            # Initial table creation without partition
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                  .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                  .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                  .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                  .write.format("delta") \
+                  .option("path", __TARGET_PATH) \
+                  .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+        else:
+            # Initial table creation with partition
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                  .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                  .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                  .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                  .write.format("delta") \
+                  .option("path", __TARGET_PATH) \
+                  .partitionBy(__PARTITION_BY_COLUMNS) \
+                  .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
     else:
-      # Initial table creation with partition
-      dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-              .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-              .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-              .write.format("delta") \
-              .option("path", __TARGET_PATH) \
-              .partitionBy(__PARTITION_BY_COLUMNS) \
-              .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
-  else:
-    print("Insert & update")
-    # Insert & update to existing table
-    deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
-    deltaTable.alias("t").merge(
-        dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-                .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-                .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-                .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-                .alias("s"),
-        getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + getPartitionCondition(dfSource, __PARTITION_BY_COLUMNS, "Match partition keys")
-    ).whenMatchedUpdateAll(  
-      condition = "s.`__HashDiff` != t.`__HashDiff`" + __UPDATE_FILTER
-    ).whenNotMatchedInsertAll(
-    ).execute()
+        print("Insert & update")
+        # Insert & update to existing table
+        deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
+        deltaTable.alias("t").merge(
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                    .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                    .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                    .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                    .alias("s"),
+            getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + getPartitionCondition(dfSource, __PARTITION_BY_COLUMNS, "Match partition keys")
+        ).whenMatchedUpdateAll(  
+          condition = "s.`__HashDiff` != t.`__HashDiff`" + __UPDATE_FILTER
+        ).whenNotMatchedInsertAll(
+        ).execute()
 
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -330,16 +329,16 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
   
-  print('Optimize data delta: ' + __TARGET_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
+    print('Optimize data delta: ' + __TARGET_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
   
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
 # COMMAND ----------
 

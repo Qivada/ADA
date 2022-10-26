@@ -144,19 +144,19 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -208,18 +208,18 @@ def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe =
 # COMMAND ----------
 
 def getColumnsWithAlias(columns, alias):
-  includeConditionJoin = False
-  conditionJoin = ", "
-  condition = ""
+    includeConditionJoin = False
+    conditionJoin = ", "
+    condition = ""
   
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += conditionJoin
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += conditionJoin
       
-    condition += alias + "." + columnName
-    includeConditionJoin = True
+        condition += alias + "." + columnName
+        includeConditionJoin = True
     
-  return condition
+    return condition
 
 # COMMAND ----------
 
@@ -243,24 +243,24 @@ __EXCLUDE_COLUMNS = ["`" + x.strip() + "`" for x in __EXCLUDE_COLUMNS.split(',')
 print("Excluded columns: " + ", ".join(__EXCLUDE_COLUMNS))
 
 if __DELETE_FILTER_COLUMNS != '':
-  __DELETE_FILTER_COLUMNS = __DELETE_FILTER_COLUMNS.replace('[', '').replace(']', '')
-  __DELETE_FILTER_COLUMNS = ["`" + x.strip() + "`" for x in __DELETE_FILTER_COLUMNS.split(',')]
-  print("Delete filter columns: " + ", ".join(__DELETE_FILTER_COLUMNS))
+    __DELETE_FILTER_COLUMNS = __DELETE_FILTER_COLUMNS.replace('[', '').replace(']', '')
+    __DELETE_FILTER_COLUMNS = ["`" + x.strip() + "`" for x in __DELETE_FILTER_COLUMNS.split(',')]
+    print("Delete filter columns: " + ", ".join(__DELETE_FILTER_COLUMNS))
 else:
-  __DELETE_FILTER_COLUMNS = None
+    __DELETE_FILTER_COLUMNS = None
 
 if __PARTITION_BY_COLUMNS != '':
-  __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
-  __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
-  print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
+    __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
+    __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
+    print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
 else:
-  __PARTITION_BY_COLUMNS = None
+    __PARTITION_BY_COLUMNS = None
 
 processLogs = []
 dfStaticArchiveLogs = dfArchiveLogs.collect()
 for archiveLog in dfStaticArchiveLogs:
-  print("Processing file: " + archiveLog.ArchiveFilePath)
-  processLogs.append({
+    print("Processing file: " + archiveLog.ArchiveFilePath)
+    processLogs.append({
       'ProcessDatetime': datetime.utcnow(),
       'ArchiveDatetimeUTC': archiveLog.ArchiveDatetimeUTC,
       'OriginalStagingFilePath': archiveLog.OriginalStagingFilePath,
@@ -268,118 +268,118 @@ for archiveLog in dfStaticArchiveLogs:
       'OriginalStagingFileSize': archiveLog.OriginalStagingFileSize,
       'ArchiveFilePath': archiveLog.ArchiveFilePath,
       'ArchiveFileName': archiveLog.ArchiveFileName
-  })
+    })
   
-  dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM parquet.`" + archiveLog.ArchiveFilePath + "`").withColumn('__DeletedDatetimeUTC', lit(None).cast(StringType()))
+    dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM parquet.`" + archiveLog.ArchiveFilePath + "`").withColumn('__DeletedDatetimeUTC', lit(None).cast(StringType()))
   
-  for columnToExclude in __EXCLUDE_COLUMNS:
-    dfSource = dfSource.drop(col(columnToExclude))
+    for columnToExclude in __EXCLUDE_COLUMNS:
+        dfSource = dfSource.drop(col(columnToExclude))
     
-  dfSource = dfSource.withColumn("__HashDiff", sha2(concat_ws("||", *dfSource.columns), 256))
-  datetimeUtcNow = datetime.utcnow()
+    dfSource = dfSource.withColumn("__HashDiff", sha2(concat_ws("||", *dfSource.columns), 256))
+    datetimeUtcNow = datetime.utcnow()
   
-  if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
-    print("Initial table creation")
-    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
+    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
+        print("Initial table creation")
+        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
     
-    if __PARTITION_BY_COLUMNS is None:
-      # Initial table creation without partition
-      dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-              .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-              .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-              .write.format("delta") \
-              .option("path", __TARGET_PATH) \
-              .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+        if __PARTITION_BY_COLUMNS is None:
+            # Initial table creation without partition
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                  .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                  .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                  .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                  .write.format("delta") \
+                  .option("path", __TARGET_PATH) \
+                  .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+        else:
+            # Initial table creation with partition
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                  .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                  .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                  .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                  .write.format("delta") \
+                  .option("path", __TARGET_PATH) \
+                  .partitionBy(__PARTITION_BY_COLUMNS) \
+                  .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
     else:
-      # Initial table creation with partition
-      dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-              .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-              .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-              .write.format("delta") \
-              .option("path", __TARGET_PATH) \
-              .partitionBy(__PARTITION_BY_COLUMNS) \
-              .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
-  else:
-    print("Insert & update")
-    # Insert & update to existing table
-    deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
-    deltaTable.alias("t").merge(
-        dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
-                .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-                .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
-                .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
-                .alias("s"),
-        getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + getPartitionCondition(dfSource, __PARTITION_BY_COLUMNS, "Match partition keys")
-    ).whenMatchedUpdateAll(  
-      condition = "s.`__HashDiff` != t.`__HashDiff`"
-    ).whenMatchedUpdate(
-      condition = "s.`__HashDiff` = t.`__HashDiff` AND t.`__DeletedDatetimeUTC` IS NOT NULL",
-      set = { 
-          '__DeletedDatetimeUTC' : lit(None).cast(StringType()),
-          '__ModifiedDatetimeUTC': lit(datetimeUtcNow),
-          '__ArchiveDatetimeUTC': lit(archiveLog.ArchiveDatetimeUTC),
-          '__ArchiveFilePath': lit(archiveLog.ArchiveFilePath),
-          '__OriginalStagingFileName': lit(archiveLog.OriginalStagingFileName)
-      }
-    ).whenNotMatchedInsertAll(
-    ).execute()
+        print("Insert & update")
+        # Insert & update to existing table
+        deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
+        deltaTable.alias("t").merge(
+            dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetimeUtcNow)) \
+                    .withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+                    .withColumn('__ArchiveFilePath', lit(archiveLog.ArchiveFilePath)) \
+                    .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName)) \
+                    .alias("s"),
+            getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + getPartitionCondition(dfSource, __PARTITION_BY_COLUMNS, "Match partition keys")
+        ).whenMatchedUpdateAll(  
+          condition = "s.`__HashDiff` != t.`__HashDiff`"
+        ).whenMatchedUpdate(
+          condition = "s.`__HashDiff` = t.`__HashDiff` AND t.`__DeletedDatetimeUTC` IS NOT NULL",
+          set = { 
+              '__DeletedDatetimeUTC' : lit(None).cast(StringType()),
+              '__ModifiedDatetimeUTC': lit(datetimeUtcNow),
+              '__ArchiveDatetimeUTC': lit(archiveLog.ArchiveDatetimeUTC),
+              '__ArchiveFilePath': lit(archiveLog.ArchiveFilePath),
+              '__OriginalStagingFileName': lit(archiveLog.OriginalStagingFileName)
+          }
+        ).whenNotMatchedInsertAll(
+        ).execute()
     
     # Mark deleted records with __DeletedDatetimeUTC
     # Record is considered deleted if it exists in target table but does not exists in source (archive record)
     print("Setting __DeletedDatetimeUTC if necessary")
     if __DELETE_FILTER_COLUMNS is None:
-      setDeletedDatetimeUtcSql = """
-      UPDATE """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS d
-      SET    d.__DeletedDatetimeUTC = '""" + str(datetimeUtcNow) + """',
-             d.__ModifiedDatetimeUTC = '""" + str(datetimeUtcNow) + """'
-      WHERE  d.__DeletedDatetimeUTC IS NULL AND
-             EXISTS (
-               SELECT 1
-               FROM   (
-                         SELECT *, 1 AS __SourceRecordExist FROM (
-                           SELECT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
-                         )
-                      ) AS s
-                      RIGHT OUTER JOIN """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS t ON """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + """
-               WHERE  s.__SourceRecordExist IS NULL AND
-                      """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys", "t", "d") + """
-             )
-      """
-      print(setDeletedDatetimeUtcSql)
-      spark.sql(setDeletedDatetimeUtcSql)
+        setDeletedDatetimeUtcSql = """
+          UPDATE """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS d
+          SET    d.__DeletedDatetimeUTC = '""" + str(datetimeUtcNow) + """',
+                 d.__ModifiedDatetimeUTC = '""" + str(datetimeUtcNow) + """'
+          WHERE  d.__DeletedDatetimeUTC IS NULL AND
+                 EXISTS (
+                   SELECT 1
+                   FROM   (
+                             SELECT *, 1 AS __SourceRecordExist FROM (
+                               SELECT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
+                             )
+                          ) AS s
+                          RIGHT OUTER JOIN """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS t ON """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys") + """
+                   WHERE  s.__SourceRecordExist IS NULL AND
+                          """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys", "t", "d") + """
+                 )
+          """
+        print(setDeletedDatetimeUtcSql)
+        spark.sql(setDeletedDatetimeUtcSql)
     else:
-      setDeletedDatetimeUtcSqlWithFilter = """
-      UPDATE """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS d
-      SET    d.__DeletedDatetimeUTC = '""" + str(datetimeUtcNow) + """',
-             d.__ModifiedDatetimeUTC = '""" + str(datetimeUtcNow) + """'
-      WHERE  d.__DeletedDatetimeUTC IS NULL AND
-             EXISTS (
-               SELECT 1
-               FROM   (
-                         SELECT *, 1 AS __SourceRecordExist FROM (
-                           SELECT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
-                         )
-                      ) AS s
-                      RIGHT OUTER JOIN (
-                         SELECT DISTINCT """ + getColumnsWithAlias(__TARGET_TABLE_BK_COLUMNS, "pre_t") + """
-                         FROM   """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS pre_t
-                                INNER JOIN (
-                                    SELECT DISTINCT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
-                                ) AS pre_s ON """ + getMatchCondition(__DELETE_FILTER_COLUMNS, "Delete filter columns", "pre_t", "pre_s") + """
-                ) AS t ON """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match delete comparison columns") + """
-               WHERE  s.__SourceRecordExist IS NULL AND
-                      """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys", "t", "d") + """
-             )
-      """
-      print(setDeletedDatetimeUtcSqlWithFilter)
-      spark.sql(setDeletedDatetimeUtcSqlWithFilter)
+        setDeletedDatetimeUtcSqlWithFilter = """
+          UPDATE """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS d
+          SET    d.__DeletedDatetimeUTC = '""" + str(datetimeUtcNow) + """',
+                 d.__ModifiedDatetimeUTC = '""" + str(datetimeUtcNow) + """'
+          WHERE  d.__DeletedDatetimeUTC IS NULL AND
+                 EXISTS (
+                   SELECT 1
+                   FROM   (
+                             SELECT *, 1 AS __SourceRecordExist FROM (
+                               SELECT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
+                             )
+                          ) AS s
+                          RIGHT OUTER JOIN (
+                             SELECT DISTINCT """ + getColumnsWithAlias(__TARGET_TABLE_BK_COLUMNS, "pre_t") + """
+                             FROM   """ + __TARGET_DATABASE + "." + __TARGET_TABLE + """ AS pre_t
+                                    INNER JOIN (
+                                        SELECT DISTINCT """ + __EXTRACT_COLUMNS + """ FROM parquet.`""" + archiveLog.ArchiveFilePath + """`
+                                    ) AS pre_s ON """ + getMatchCondition(__DELETE_FILTER_COLUMNS, "Delete filter columns", "pre_t", "pre_s") + """
+                    ) AS t ON """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match delete comparison columns") + """
+                   WHERE  s.__SourceRecordExist IS NULL AND
+                          """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys", "t", "d") + """
+                 )
+          """
+        print(setDeletedDatetimeUtcSqlWithFilter)
+        spark.sql(setDeletedDatetimeUtcSqlWithFilter)
 
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -387,16 +387,16 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
   
-  print('Optimize data delta: ' + __TARGET_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
+    print('Optimize data delta: ' + __TARGET_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
   
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
 # COMMAND ----------
 
