@@ -93,19 +93,19 @@ __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL
 # Get process datetimes
 lastProcessDatetimeUTC = None
 try:
-  dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
-  lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
-  print("Using existing log with date: " + str(lastProcessDatetimeUTC))
+    dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
+    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
+    print("Using existing log with date: " + str(lastProcessDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
-  print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
+    print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -123,9 +123,9 @@ maxDatetimeUTC = spark.sql("""
         `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").rdd.max()[0]
 
 if maxDatetimeUTC:
-  # Save max. archive datetime to target process datetime log
-  dfProcessDatetime = spark.sql("SELECT CAST('" + str(maxDatetimeUTC) + "' AS timestamp) AS ProcessDatetime")
-  dfProcessDatetime.write.format("delta") \
+    # Save max. archive datetime to target process datetime log
+    dfProcessDatetime = spark.sql("SELECT CAST('" + str(maxDatetimeUTC) + "' AS timestamp) AS ProcessDatetime")
+    dfProcessDatetime.write.format("delta") \
                          .mode("append") \
                          .save(__TARGET_LOG_PATH)
 

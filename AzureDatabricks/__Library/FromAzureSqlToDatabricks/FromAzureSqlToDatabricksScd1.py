@@ -111,22 +111,22 @@ __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL
 # COMMAND ----------
 
 def getMatchCondition(columns, note, nullSafe = False):
-  includeConditionJoin = False
-  conditionJoin = "AND"
-  condition = ""
+    includeConditionJoin = False
+    conditionJoin = "AND"
+    condition = ""
   
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += " " + conditionJoin + " "
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += " " + conditionJoin + " "
       
-    if nullSafe == False:
-      condition += "s." + columnName + " = t." + columnName
-    else:
-      condition += "s." + columnName + " <=> t." + columnName
+        if nullSafe == False:
+            condition += "s." + columnName + " = t." + columnName
+        else:
+            condition += "s." + columnName + " <=> t." + columnName
       
-    includeConditionJoin = True
+        includeConditionJoin = True
     
-  return condition
+    return condition
 
 # COMMAND ----------
 
@@ -142,49 +142,49 @@ __EXCLUDE_COLUMNS = ["`" + x.strip() + "`" for x in __EXCLUDE_COLUMNS.split(',')
 print("Excluded columns: " + ", ".join(__EXCLUDE_COLUMNS))
 
 if __PARTITION_BY_COLUMNS != '':
-  __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
-  __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
-  print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
+    __PARTITION_BY_COLUMNS = __PARTITION_BY_COLUMNS.replace('[', '').replace(']', '')
+    __PARTITION_BY_COLUMNS = ["`" + x.strip() + "`" for x in __PARTITION_BY_COLUMNS.split(',')]
+    print("Partition by columns: " + ", ".join(__PARTITION_BY_COLUMNS))
 else:
-  __PARTITION_BY_COLUMNS = None
+    __PARTITION_BY_COLUMNS = None
 
 print("Processing SQL query: " + __SOURCE_SQL)
 dfSource = spark.read.jdbc(url=__SQL_JDBC, table=__SOURCE_SQL)
 
 for columnToExclude in __EXCLUDE_COLUMNS:
-  dfSource = dfSource.drop(col(columnToExclude))
+    dfSource = dfSource.drop(col(columnToExclude))
 
 dfSource = dfSource.withColumn("__HashDiff", sha2(concat_ws("||", *dfSource.columns), 256))
 
 if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
-  print("Initial table creation")
-  spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    print("Initial table creation")
+    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
 
-  if __PARTITION_BY_COLUMNS is None:
-    dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
-            .write.format("delta") \
-            .option("path", __TARGET_PATH) \
-            .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
-  else:
-    dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
-            .write.format("delta") \
-            .option("path", __TARGET_PATH) \
-            .partitionBy(__PARTITION_BY_COLUMNS) \
-            .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+    if __PARTITION_BY_COLUMNS is None:
+        dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
+                .write.format("delta") \
+                .option("path", __TARGET_PATH) \
+                .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
+    else:
+        dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
+                .write.format("delta") \
+                .option("path", __TARGET_PATH) \
+                .partitionBy(__PARTITION_BY_COLUMNS) \
+                .saveAsTable(__TARGET_DATABASE + "." + __TARGET_TABLE)
 else:
-  print("Insert & update")
-  deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
-  deltaTable.alias("t").merge(
-      dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
-              .alias("s"),
-      getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys")
-  ).whenMatchedUpdateAll(  
-    condition = "s.`__HashDiff` != t.`__HashDiff`"
-  ).whenNotMatchedInsertAll(
-  ).execute()
+    print("Insert & update")
+    deltaTable = DeltaTable.forPath(spark, __TARGET_PATH)
+    deltaTable.alias("t").merge(
+          dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
+                  .alias("s"),
+          getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys")
+    ).whenMatchedUpdateAll(  
+        condition = "s.`__HashDiff` != t.`__HashDiff`"
+    ).whenNotMatchedInsertAll(
+    ).execute()
   
-print('Optimize delta: ' + __TARGET_PATH)
-spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
+    print('Optimize delta: ' + __TARGET_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
 
 # COMMAND ----------
 
