@@ -84,33 +84,33 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
 # Clear target
 try:
-  if __CLEAR_TARGET == "True":
-    dfTargetFiles = dbutils.fs.ls(__TARGET_PATH)
-    for targetFile in dfTargetFiles:
-      # Target must not be folder (path ends with / e.g. Log/)
-      if targetFile.path.endswith("/") == False:
-        dbutils.fs.rm(targetFile.path)
-        print("Removed target file '" + targetFile.path + "'.")
-  else:
-    print("Target was not cleared.")
+    if __CLEAR_TARGET == "True":
+        dfTargetFiles = dbutils.fs.ls(__TARGET_PATH)
+        for targetFile in dfTargetFiles:
+            # Target must not be folder (path ends with / e.g. Log/)
+            if targetFile.path.endswith("/") == False:
+                dbutils.fs.rm(targetFile.path)
+                print("Removed target file '" + targetFile.path + "'.")
+    else:
+        print("Target was not cleared.")
 except:
     print("Clear target failed. Probably target does not exists.")
 
@@ -129,8 +129,8 @@ __EXTRACT_COLUMNS = __EXTRACT_COLUMNS.replace('[','`').replace(']','`')
 processLogs = []
 dfStaticArchiveLogs = dfArchiveLogs.collect()
 for archiveLog in dfStaticArchiveLogs:
-  print("Processing file: " + archiveLog.ArchiveFilePath)  
-  processLogs.append({
+    print("Processing file: " + archiveLog.ArchiveFilePath)  
+    processLogs.append({
       'ProcessDatetime': datetime.utcnow(),
       'ArchiveDatetimeUTC': archiveLog.ArchiveDatetimeUTC,
       'OriginalStagingFilePath': archiveLog.OriginalStagingFilePath,
@@ -138,26 +138,26 @@ for archiveLog in dfStaticArchiveLogs:
       'OriginalStagingFileSize': archiveLog.OriginalStagingFileSize,
       'ArchiveFilePath': archiveLog.ArchiveFilePath,
       'ArchiveFileName': archiveLog.ArchiveFileName
-  })
+    })
   
-  try:
-    # Select from archive and save to target
-    dfAnalytics = spark.sql(" \
-      SELECT " + __EXTRACT_COLUMNS + " " + " \
-      FROM   parquet.`" + archiveLog.ArchiveFilePath + "` \
-    ").withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-      .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
+    try:
+        # Select from archive and save to target
+        dfAnalytics = spark.sql(" \
+              SELECT " + __EXTRACT_COLUMNS + " " + " \
+              FROM   parquet.`" + archiveLog.ArchiveFilePath + "` \
+            ").withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
 
-    dfAnalytics.write.format("parquet") \
-                     .mode("append") \
-                     .save(__TARGET_PATH)
-  except:
-    print("Could not process file.")
+        dfAnalytics.write.format("parquet") \
+                         .mode("append") \
+                         .save(__TARGET_PATH)
+    except:
+        print("Could not process file.")
 
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -165,17 +165,17 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
   
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
-  # Vacuum target twice to get rid of all commit logs
-  spark.sql("VACUUM delta.`" + __TARGET_PATH + "` RETAIN 0 HOURS")
-  spark.sql("VACUUM delta.`" + __TARGET_PATH + "` RETAIN 0 HOURS")
+    # Vacuum target twice to get rid of all commit logs
+    spark.sql("VACUUM delta.`" + __TARGET_PATH + "` RETAIN 0 HOURS")
+    spark.sql("VACUUM delta.`" + __TARGET_PATH + "` RETAIN 0 HOURS")
 
 # COMMAND ----------
 
