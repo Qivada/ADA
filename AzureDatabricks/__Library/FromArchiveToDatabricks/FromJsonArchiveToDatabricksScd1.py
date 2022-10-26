@@ -10,70 +10,70 @@
 
 # Parameters
 try:
-  # Archive path e.g. archive/adventureworkslt/address/
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/address/
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
   
-  # Target database e.g. CRM
-  __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
+    # Target database e.g. CRM
+    __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
   
-  # Target table e.g. Account
-  __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
+    # Target table e.g. Account
+    __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
   
-  # Target table business key columns e.g. CustomerID
-  __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
+    # Target table business key columns e.g. CustomerID
+    __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
   
-  # Target path e.g. analytics/datalake/crm/account/data
-  __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
+    # Target path e.g. analytics/datalake/crm/account/data
+    __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
   
-  # Target process datetime log path e.g. analytics/datalake/crm/account/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datalake/crm/account/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
-  __EXCLUDE_COLUMNS = ""  
-  try:
-    __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
-  except:
-    print('No columns to exclude')
+    # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
+    __EXCLUDE_COLUMNS = ""  
+    try:
+        __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
+    except:
+        print('No columns to exclude')
     
-  # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
-  __PARTITION_BY_COLUMNS_PRE_SQL = ""  
-  try:
-    __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
-  except:
-    print('No partition by column pre SQL')  
+    # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
+    __PARTITION_BY_COLUMNS_PRE_SQL = ""  
+    try:
+        __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
+    except:
+        print('No partition by column pre SQL')  
 
-  # Partition by columns e.g. __YearPartition, __MonthPartition
-  __PARTITION_BY_COLUMNS = ""  
-  try:
-    __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
-  except:
-    print('No partition by columns')  
+    # Partition by columns e.g. __YearPartition, __MonthPartition
+    __PARTITION_BY_COLUMNS = ""  
+    try:
+        __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
+    except:
+        print('No partition by columns')  
     
-  __COMPLEX_AS_STRING = "False"
-  try:
-    __COMPLEX_AS_STRING = dbutils.widgets.get("COMPLEX_AS_STRING")
-  except:
-    print('No complex as string')
+    __COMPLEX_AS_STRING = "False"
+    try:
+        __COMPLEX_AS_STRING = dbutils.widgets.get("COMPLEX_AS_STRING")
+    except:
+        print('No complex as string')
     
-  __UPDATE_FILTER = ""  
-  try:
-    __UPDATE_FILTER = dbutils.widgets.get("UPDATE_FILTER")
-    __UPDATE_FILTER = ' AND ' + __UPDATE_FILTER
-  except:
-    print('No update filter')  
+    __UPDATE_FILTER = ""  
+    try:
+        __UPDATE_FILTER = dbutils.widgets.get("UPDATE_FILTER")
+        __UPDATE_FILTER = ' AND ' + __UPDATE_FILTER
+    except:
+        print('No update filter')  
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 
@@ -187,18 +187,18 @@ def getMatchCondition(columns, note, sourceAlias = "s", targetAlias = "t", nullS
 # COMMAND ----------
 
 def getColumnsWithAlias(columns, alias):
-  includeConditionJoin = False
-  conditionJoin = ", "
-  condition = ""
+    includeConditionJoin = False
+    conditionJoin = ", "
+    condition = ""
   
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += conditionJoin
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+        condition += conditionJoin
       
-    condition += alias + "." + columnName
-    includeConditionJoin = True
+        condition += alias + "." + columnName
+        includeConditionJoin = True
     
-  return condition
+    return condition
 
 # COMMAND ----------
 

@@ -10,45 +10,45 @@
 
 # Parameters
 try:
-  # Archive path e.g. archive/adventureworkslt/address/
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/address/
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
    
-  # Target process datetime log path e.g. analytics/datawarehouse/address/temp/
-  __TARGET_TEMP_PATH = dbutils.widgets.get("TARGET_TEMP_PATH")
+    # Target process datetime log path e.g. analytics/datawarehouse/address/temp/
+    __TARGET_TEMP_PATH = dbutils.widgets.get("TARGET_TEMP_PATH")
   
-  # Target process datetime log path e.g. analytics/datawarehouse/address/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datawarehouse/address/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Table name with schema e.g. stg.X_adventureworkslt_address
-  __TABLE_NAME = dbutils.widgets.get("TABLE_NAME")
+    # Table name with schema e.g. stg.X_adventureworkslt_address
+    __TABLE_NAME = dbutils.widgets.get("TABLE_NAME")
   
-  # Include previous. Use "True" or "False"
-  # True = ArchiveDatetimeUTC >= lastArchiveDatetimeUTC
-  # False = ArchiveDatetimeUTC > lastArchiveDatetimeUTC
-  __INCLUDE_PREVIOUS = "False"
-  try:
-    __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
-  except:
-    print("Using default include previous: " + __INCLUDE_PREVIOUS)
+    # Include previous. Use "True" or "False"
+    # True = ArchiveDatetimeUTC >= lastArchiveDatetimeUTC
+    # False = ArchiveDatetimeUTC > lastArchiveDatetimeUTC
+    __INCLUDE_PREVIOUS = "False"
+    try:
+        __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
+    except:
+        print("Using default include previous: " + __INCLUDE_PREVIOUS)
     
-  __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = "SQL-JDBC-connection-string"
-  try:
-    __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = dbutils.widgets.get("JDBC_CONNECTION_STRING")
-  except:
-    print("Using default JDBC connection string: " + __SECRET_NAME_SQL_JDBC_CONNECTION_STRING)
+    __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = "SQL-JDBC-connection-string"
+    try:
+        __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = dbutils.widgets.get("JDBC_CONNECTION_STRING")
+    except:
+        print("Using default JDBC connection string: " + __SECRET_NAME_SQL_JDBC_CONNECTION_STRING)
 
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 
@@ -94,19 +94,19 @@ __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -124,8 +124,8 @@ __TABLE_NAME = __TABLE_NAME.replace('[','').replace(']','')
 processLogs = []
 dfStaticArchiveLogs = dfArchiveLogs.collect()
 for archiveLog in dfStaticArchiveLogs:
-  print("Processing file: " + archiveLog.ArchiveFilePath)  
-  processLogs.append({
+    print("Processing file: " + archiveLog.ArchiveFilePath)  
+    processLogs.append({
       'ProcessDatetime': datetime.utcnow(),
       'ArchiveDatetimeUTC': archiveLog.ArchiveDatetimeUTC,
       'OriginalStagingFilePath': archiveLog.OriginalStagingFilePath,
@@ -133,30 +133,30 @@ for archiveLog in dfStaticArchiveLogs:
       'OriginalStagingFileSize': archiveLog.OriginalStagingFileSize,
       'ArchiveFilePath': archiveLog.ArchiveFilePath,
       'ArchiveFileName': archiveLog.ArchiveFileName
-  })
+    })
   
-  try:
-    # Select from archive and save to target
-    dfArchive = spark.sql(" \
-      SELECT " + __EXTRACT_COLUMNS + " " + " \
-      FROM   parquet.`" + archiveLog.ArchiveFilePath + "` \
-    ").withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
-      .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
+    try:
+        # Select from archive and save to target
+        dfArchive = spark.sql(" \
+              SELECT " + __EXTRACT_COLUMNS + " " + " \
+              FROM   parquet.`" + archiveLog.ArchiveFilePath + "` \
+            ").withColumn('__ArchiveDatetimeUTC', lit(archiveLog.ArchiveDatetimeUTC)) \
+              .withColumn('__OriginalStagingFileName', lit(archiveLog.OriginalStagingFileName))
     
-    dfArchive.write.mode("append").parquet(__TARGET_TEMP_PATH)      
-  except:
-    print("Could not process file.")
+        dfArchive.write.mode("append").parquet(__TARGET_TEMP_PATH)      
+    except:
+        print("Could not process file.")
     
 if dfStaticArchiveLogs:
-  dfAnalytics = spark.read.option("mergeSchema", "true").parquet(__TARGET_TEMP_PATH)
-  dfAnalytics.write.mode("overwrite").jdbc(url=__SQL_JDBC, table=__TABLE_NAME)
+    dfAnalytics = spark.read.option("mergeSchema", "true").parquet(__TARGET_TEMP_PATH)
+    dfAnalytics.write.mode("overwrite").jdbc(url=__SQL_JDBC, table=__TABLE_NAME)
 
-  dbutils.fs.rm(__TARGET_TEMP_PATH, True)
+    dbutils.fs.rm(__TARGET_TEMP_PATH, True)
 
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -164,13 +164,13 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
   
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
 # COMMAND ----------
 

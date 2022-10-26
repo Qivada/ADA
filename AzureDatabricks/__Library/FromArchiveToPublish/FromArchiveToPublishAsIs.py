@@ -10,39 +10,39 @@
 
 # Parameters
 try:
-  # Archive path e.g. archive/adventureworkslt/address/
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/address/
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
   
-  # Target path e.g. analytics/datawarehouse/address/
-  __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
+    # Target path e.g. analytics/datawarehouse/address/
+    __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
   
-  # Target process datetime log path e.g. analytics/datawarehouse/address/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datawarehouse/address/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Target file extension e.g. .parquet
-  __TARGET_FILE_EXTENSION = dbutils.widgets.get("TARGET_FILE_EXTENSION")
+    # Target file extension e.g. .parquet
+    __TARGET_FILE_EXTENSION = dbutils.widgets.get("TARGET_FILE_EXTENSION")
   
-  # Clear target. Use "True" or "False"
-  __CLEAR_TARGET = dbutils.widgets.get("CLEAR_TARGET")
+    # Clear target. Use "True" or "False"
+    __CLEAR_TARGET = dbutils.widgets.get("CLEAR_TARGET")
   
-  # Include previous. Use "True" or "False"
-  # True = ArchiveDatetimeUTC >= lastArchiveDatetimeUTC
-  # False = ArchiveDatetimeUTC > lastArchiveDatetimeUTC
-  __INCLUDE_PREVIOUS = "False"
-  try:
-    __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
-  except:
-    print("Using default include previous: " + __INCLUDE_PREVIOUS)
+    # Include previous. Use "True" or "False"
+    # True = ArchiveDatetimeUTC >= lastArchiveDatetimeUTC
+    # False = ArchiveDatetimeUTC > lastArchiveDatetimeUTC
+    __INCLUDE_PREVIOUS = "False"
+    try:
+        __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
+    except:
+        print("Using default include previous: " + __INCLUDE_PREVIOUS)
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 

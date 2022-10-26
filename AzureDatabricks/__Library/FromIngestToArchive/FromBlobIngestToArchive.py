@@ -10,23 +10,23 @@
 
 # Parameters
 try:
-   # Container e.g. anaplan
-  __CONTAINER = dbutils.widgets.get("CONTAINER")
+    # Container e.g. anaplan
+    __CONTAINER = dbutils.widgets.get("CONTAINER")
   
-  # Ingest path e.g. ingest/adventureworkslt/customer/
-  __INGEST_PATH = dbutils.widgets.get("INGEST_PATH")
+    # Ingest path e.g. ingest/adventureworkslt/customer/
+    __INGEST_PATH = dbutils.widgets.get("INGEST_PATH")
   
-  # Archive path e.g. archive/adventureworkslt/customer/ 
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/customer/ 
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 

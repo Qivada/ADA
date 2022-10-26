@@ -10,46 +10,46 @@
 
 # Parameters
 try:
-  # Source database e.g. lehdetdw
-  __SOURCE_DATABASE = dbutils.widgets.get("SOURCE_DATABASE")
+    # Source database e.g. lehdetdw
+    __SOURCE_DATABASE = dbutils.widgets.get("SOURCE_DATABASE")
   
-  # Source table.g. f_tilaus
-  __SOURCE_TABLE = dbutils.widgets.get("SOURCE_TABLE")
+    # Source table.g. f_tilaus
+    __SOURCE_TABLE = dbutils.widgets.get("SOURCE_TABLE")
   
-  # Source track date columns e.g. __ModifiedDatetimeUTC
-  __SOURCE_TRACK_DATE_COLUMN = "__ModifiedDatetimeUTC"
-  try:
-    __SOURCE_TRACK_DATE_COLUMN = dbutils.widgets.get("SOURCE_TRACK_DATE_COLUMN")
-  except:
-    print("Using default source track column: " + __SOURCE_TRACK_DATE_COLUMN)
+    # Source track date columns e.g. __ModifiedDatetimeUTC
+    __SOURCE_TRACK_DATE_COLUMN = "__ModifiedDatetimeUTC"
+    try:
+        __SOURCE_TRACK_DATE_COLUMN = dbutils.widgets.get("SOURCE_TRACK_DATE_COLUMN")
+    except:
+        print("Using default source track column: " + __SOURCE_TRACK_DATE_COLUMN)
    
-  # Target process datetime log path e.g. analytics/datawarehouse/address/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datawarehouse/address/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Table name with schema e.g. stg.X_adventureworkslt_address
-  __TABLE_NAME = dbutils.widgets.get("TABLE_NAME")
+    # Table name with schema e.g. stg.X_adventureworkslt_address
+    __TABLE_NAME = dbutils.widgets.get("TABLE_NAME")
     
-  # Include previous. Use "True" or "False"
-  # True = ArchiveDatetimeUTC >= lastProcessDatetimeUTC
-  # False = ArchiveDatetimeUTC > lastProcessDatetimeUTC
-  __INCLUDE_PREVIOUS = "False"
-  try:
-    __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
-  except:
-    print("Using default include previous: " + __INCLUDE_PREVIOUS)
+    # Include previous. Use "True" or "False"
+    # True = ArchiveDatetimeUTC >= lastProcessDatetimeUTC
+    # False = ArchiveDatetimeUTC > lastProcessDatetimeUTC
+    __INCLUDE_PREVIOUS = "False"
+    try:
+        __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
+    except:
+        print("Using default include previous: " + __INCLUDE_PREVIOUS)
   
-  # Delta day count e.g. get data newer than 3 days since the last processing date
-  __DELTA_DAY_COUNT = 0
-  try:
-    __DELTA_DAY_COUNT = dbutils.widgets.get("DELTA_DAY_COUNT")
-  except:
-    print("Using default delta day count: " + str(__DELTA_DAY_COUNT))
+    # Delta day count e.g. get data newer than 3 days since the last processing date
+    __DELTA_DAY_COUNT = 0
+    try:
+        __DELTA_DAY_COUNT = dbutils.widgets.get("DELTA_DAY_COUNT")
+    except:
+        print("Using default delta day count: " + str(__DELTA_DAY_COUNT))
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 

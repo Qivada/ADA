@@ -10,71 +10,71 @@
 
 # Parameters
 try:
-  # Archive path e.g. archive/adventureworkslt/address/
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/address/
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
   
-  # Target database e.g. CRM
-  __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
+    # Target database e.g. CRM
+    __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
   
-  # Target table e.g. Account
-  __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
+    # Target table e.g. Account
+    __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
   
-  # Target table business key columns e.g. CustomerID
-  __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
+    # Target table business key columns e.g. CustomerID
+    __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
   
-  # Target path e.g. analytics/datalake/crm/account/data
-  __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
+    # Target path e.g. analytics/datalake/crm/account/data
+    __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
   
-  # Target process datetime log path e.g. analytics/datalake/crm/account/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datalake/crm/account/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
-  __EXCLUDE_COLUMNS = ""  
-  try:
-    __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
-  except:
-    print('No columns to exclude')
+    # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
+    __EXCLUDE_COLUMNS = ""  
+    try:
+        __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
+    except:
+        print('No columns to exclude')
      
-  # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
-  __PARTITION_BY_COLUMNS_PRE_SQL = ""  
-  try:
-    __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
-  except:
-    print('No partition by column pre SQL')  
+    # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
+    __PARTITION_BY_COLUMNS_PRE_SQL = ""  
+    try:
+        __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
+    except:
+        print('No partition by column pre SQL')  
 
-  # Partition by columns e.g. __YearPartition, __MonthPartition
-  __PARTITION_BY_COLUMNS = ""  
-  try:
-    __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
-  except:
-    print('No partition by columns')  
+    # Partition by columns e.g. __YearPartition, __MonthPartition
+    __PARTITION_BY_COLUMNS = ""  
+    try:
+        __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
+    except:
+        print('No partition by columns')  
     
-  # Default encoding
-  __ENCODING = "ISO-8859-1"
-  try:
-    __ENCODING = dbutils.widgets.get("ENCODING")
-  except:
-    print('Using default encoding: ' + __ENCODING)
+    # Default encoding
+    __ENCODING = "ISO-8859-1"
+    try:
+        __ENCODING = dbutils.widgets.get("ENCODING")
+    except:
+        print('Using default encoding: ' + __ENCODING)
     
-  # Default delimiter
-  __DELIMITER = ","
-  try:
-    __DELIMITER = dbutils.widgets.get("DELIMITER")
-  except:
-    print('Using default delimiter: ' + __DELIMITER)
+    # Default delimiter
+    __DELIMITER = ","
+    try:
+        __DELIMITER = dbutils.widgets.get("DELIMITER")
+    except:
+        print('Using default delimiter: ' + __DELIMITER)
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 
@@ -188,18 +188,18 @@ def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe =
 # COMMAND ----------
 
 def getColumnsWithAlias(columns, alias):
-  includeConditionJoin = False
-  conditionJoin = ", "
-  condition = ""
+    includeConditionJoin = False
+    conditionJoin = ", "
+    condition = ""
   
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += conditionJoin
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += conditionJoin
       
-    condition += alias + "." + columnName
-    includeConditionJoin = True
+        condition += alias + "." + columnName
+        includeConditionJoin = True
     
-  return condition
+    return condition
 
 # COMMAND ----------
 
@@ -314,7 +314,7 @@ for archiveLog in dfStaticArchiveLogs:
 # COMMAND ----------
 
 if processLogs:
-  dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
+    dfProcessLogs = spark.createDataFrame(pd.DataFrame(processLogs)) \
                        .selectExpr("CAST(ProcessDatetime AS timestamp) AS ProcessDatetime", \
                                    "CAST(ArchiveDatetimeUTC AS timestamp) AS ArchiveDatetimeUTC", \
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
@@ -322,16 +322,16 @@ if processLogs:
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName")
-  dfProcessLogs.write.format("delta") \
+    dfProcessLogs.write.format("delta") \
                      .mode("append") \
                      .option("mergeSchema", "true") \
                      .save(__TARGET_LOG_PATH) 
   
-  print('Optimize data delta: ' + __TARGET_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
+    print('Optimize data delta: ' + __TARGET_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_PATH + '`').display()
   
-  print('Optimize log delta: ' + __TARGET_LOG_PATH)
-  spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
+    print('Optimize log delta: ' + __TARGET_LOG_PATH)
+    spark.sql('OPTIMIZE delta.`' + __TARGET_LOG_PATH + '`').display()
 
 # COMMAND ----------
 

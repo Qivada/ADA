@@ -10,78 +10,78 @@
 
 # Parameters
 try:
-  # Archive path e.g. archive/adventureworkslt/address/
-  __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
+    # Archive path e.g. archive/adventureworkslt/address/
+    __ARCHIVE_PATH = dbutils.widgets.get("ARCHIVE_PATH")
   
-  # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
-  __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
-  try:
-    __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
-  except:
-    print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
+    # Optional: Archive log path e.g. archive/adventureworkslt/customer/log/
+    __ARCHIVE_LOG_PATH = __ARCHIVE_PATH + "/log"
+    try:
+        __ARCHIVE_LOG_PATH = dbutils.widgets.get("ARCHIVE_LOG_PATH")
+    except:
+        print("Using default archive log path: " + __ARCHIVE_LOG_PATH)
   
-  # Target database e.g. CRM
-  __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
+    # Target database e.g. CRM
+    __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
   
-  # Target table e.g. Account
-  __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
+    # Target table e.g. Account
+    __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
   
-  # Target table business key columns e.g. CustomerID
-  __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
+    # Target table business key columns e.g. CustomerID
+    __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
   
-  # Target path e.g. analytics/datalake/crm/account/data
-  __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
+    # Target path e.g. analytics/datalake/crm/account/data
+    __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
   
-  # Target process datetime log path e.g. analytics/datalake/crm/account/log/
-  __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
+    # Target process datetime log path e.g. analytics/datalake/crm/account/log/
+    __TARGET_LOG_PATH = dbutils.widgets.get("TARGET_LOG_PATH")
   
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
-  __EXCLUDE_COLUMNS = ""  
-  try:
-    __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
-  except:
-    print('No columns to exclude')
+    # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
+    __EXCLUDE_COLUMNS = ""  
+    try:
+        __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
+    except:
+        print('No columns to exclude')
     
-  # Delete filter columns. Delete is done only when values on this/these columns exists both on archive and target data
-  __DELETE_FILTER_COLUMNS = ""  
-  try:
-    __DELETE_FILTER_COLUMNS = dbutils.widgets.get("DELETE_FILTER_COLUMNS")
-  except:
-    print('No delete filter columns')  
+    # Delete filter columns. Delete is done only when values on this/these columns exists both on archive and target data
+    __DELETE_FILTER_COLUMNS = ""  
+    try:
+        __DELETE_FILTER_COLUMNS = dbutils.widgets.get("DELETE_FILTER_COLUMNS")
+    except:
+        print('No delete filter columns')  
     
-  # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
-  __PARTITION_BY_COLUMNS_PRE_SQL = ""  
-  try:
-    __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
-  except:
-    print('No partition by column pre SQL')  
+    # Partition by columns pre SQL e.g. year(`transactiondate`) as __YearPartition, month(`transactiondate`) as __MonthPartition, 
+    __PARTITION_BY_COLUMNS_PRE_SQL = ""  
+    try:
+        __PARTITION_BY_COLUMNS_PRE_SQL = dbutils.widgets.get("PARTITION_BY_COLUMNS_PRE_SQL")
+    except:
+        print('No partition by column pre SQL')  
 
-  # Partition by columns e.g. __YearPartition, __MonthPartition
-  __PARTITION_BY_COLUMNS = ""  
-  try:
-    __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
-  except:
-    print('No partition by columns')  
+    # Partition by columns e.g. __YearPartition, __MonthPartition
+    __PARTITION_BY_COLUMNS = ""  
+    try:
+        __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
+    except:
+        print('No partition by columns')  
     
-  # Default encoding
-  __ENCODING = "ISO-8859-1"
-  try:
-    __ENCODING = dbutils.widgets.get("ENCODING")
-  except:
-    print('Using default encoding: ' + __ENCODING)  
+    # Default encoding
+    __ENCODING = "ISO-8859-1"
+    try:
+        __ENCODING = dbutils.widgets.get("ENCODING")
+    except:
+        print('Using default encoding: ' + __ENCODING)  
     
-  # Default delimiter
-  __DELIMITER = ","
-  try:
-    __DELIMITER = dbutils.widgets.get("DELIMITER")
-  except:
-    print('Using default delimiter: ' + __DELIMITER)  
+    # Default delimiter
+    __DELIMITER = ","
+    try:
+        __DELIMITER = dbutils.widgets.get("DELIMITER")
+    except:
+        print('Using default delimiter: ' + __DELIMITER)  
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 
@@ -131,19 +131,19 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 # Get process datetimes
 lastArchiveDatetimeUTC = None
 try:
-  # Try to read existing log
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
+    # Try to read existing log
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Using existing log with time: " + str(lastArchiveDatetimeUTC))
 except AnalysisException as ex:
-  # Initiliaze delta as it did not exist
-  dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
-  dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-  lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
-  print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
+    # Initiliaze delta as it did not exist
+    dfProcessDatetimes = spark.sql("SELECT CAST(date_sub(current_timestamp(), 5) AS timestamp) AS ArchiveDatetimeUTC")
+    dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
+    lastArchiveDatetimeUTC = spark.sql("SELECT MAX(ArchiveDatetimeUTC) AS ArchiveDatetimeUTC FROM delta.`" + __TARGET_LOG_PATH + "`").collect()[0][0]
+    print("Initiliazed log with time: " + str(lastArchiveDatetimeUTC))
 except Exception as ex:
-  print("Could not read log")
-  print(ex)
-  raise
+    print("Could not read log")
+    print(ex)
+    raise
 
 # COMMAND ----------
 
@@ -195,18 +195,18 @@ def getPartitionCondition(dfSource, columns, note, targetAlias = "t", nullSafe =
 # COMMAND ----------
 
 def getColumnsWithAlias(columns, alias):
-  includeConditionJoin = False
-  conditionJoin = ", "
-  condition = ""
+    includeConditionJoin = False
+    conditionJoin = ", "
+    condition = ""
   
-  for columnIndex, columnName in enumerate(columns):
-    if includeConditionJoin == True:
-      condition += conditionJoin
+    for columnIndex, columnName in enumerate(columns):
+        if includeConditionJoin == True:
+            condition += conditionJoin
       
-    condition += alias + "." + columnName
-    includeConditionJoin = True
+        condition += alias + "." + columnName
+        includeConditionJoin = True
     
-  return condition
+    return condition
 
 # COMMAND ----------
 

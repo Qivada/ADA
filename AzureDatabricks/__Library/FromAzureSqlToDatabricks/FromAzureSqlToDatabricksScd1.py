@@ -28,47 +28,47 @@
 
 # Parameters
 try:
-  __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = "SQL-JDBC-connection-string"
-  try:
-    __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = dbutils.widgets.get("JDBC_CONNECTION_STRING")
-  except:
-    print("Using default JDBC connection string: " + __SECRET_NAME_SQL_JDBC_CONNECTION_STRING)
+    __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = "SQL-JDBC-connection-string"
+    try:
+        __SECRET_NAME_SQL_JDBC_CONNECTION_STRING = dbutils.widgets.get("JDBC_CONNECTION_STRING")
+    except:
+        print("Using default JDBC connection string: " + __SECRET_NAME_SQL_JDBC_CONNECTION_STRING)
     
-  # Target database e.g. SELECT * FROM [dw].[D_Customer]
-  __SOURCE_SQL = dbutils.widgets.get("SOURCE_SQL")
-  __SOURCE_SQL = "(" + __SOURCE_SQL + ") SRC"
+    # Target database e.g. SELECT * FROM [dw].[D_Customer]
+    __SOURCE_SQL = dbutils.widgets.get("SOURCE_SQL")
+    __SOURCE_SQL = "(" + __SOURCE_SQL + ") SRC"
   
-  # Target database e.g. CRM
-  __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
+    # Target database e.g. CRM
+    __TARGET_DATABASE = dbutils.widgets.get("TARGET_DATABASE")
   
-  # Target table e.g. Account
-  __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
+    # Target table e.g. Account
+    __TARGET_TABLE = dbutils.widgets.get("TARGET_TABLE")
   
-  # Target table business key columns e.g. CustomerID
-  __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
+    # Target table business key columns e.g. CustomerID
+    __TARGET_TABLE_BK_COLUMNS = dbutils.widgets.get("TARGET_TABLE_BK_COLUMNS")
   
-  # Target path e.g. analytics/datalake/crm/account/data
-  __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
+    # Target path e.g. analytics/datalake/crm/account/data
+    __TARGET_PATH = dbutils.widgets.get("TARGET_PATH")
  
-  # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
-  __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
+    # Columns to extract e.g. * or AddressID, AddressLine1, AddressLine2, City, StateProvince, CountryRegion, PostalCode, rowguid, ModifiedDate
+    __EXTRACT_COLUMNS = dbutils.widgets.get("EXTRACT_COLUMNS")
   
-  # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
-  __EXCLUDE_COLUMNS = ""  
-  try:
-    __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
-  except:
-    print('No columns to exclude')
+    # Columns to eclude from final data set e.g. PasswordHash, PasswordSalt
+    __EXCLUDE_COLUMNS = ""  
+    try:
+        __EXCLUDE_COLUMNS = dbutils.widgets.get("EXCLUDE_COLUMNS")
+    except:
+        print('No columns to exclude')
     
-  # Partition by columns e.g. __YearPartition, __MonthPartition
-  __PARTITION_BY_COLUMNS = ""  
-  try:
-    __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
-  except:
-    print('No partition by columns')  
+    # Partition by columns e.g. __YearPartition, __MonthPartition
+    __PARTITION_BY_COLUMNS = ""  
+    try:
+        __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
+    except:
+        print('No partition by columns')  
     
 except:
-  raise Exception("Required parameter(s) missing")
+    raise Exception("Required parameter(s) missing")
 
 # COMMAND ----------
 
