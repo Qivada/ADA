@@ -268,7 +268,7 @@ for archiveLog in dfStaticArchiveLogs:
     dfSourceTempViewName = "tmp_" + str(uuid.uuid4()).replace('-', '_')
     dfSource.createOrReplaceTempView(dfSourceTempViewName)
     
-    dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM `" + dfSourceTempViewName + "`)
+    dfSource = spark.sql("SELECT " + __EXTRACT_COLUMNS + " FROM `" + dfSourceTempViewName + "`")
     dfSource = dfSource.where(__TARGET_TABLE_BK_COLUMNS_FILTER)
                          
     try:
