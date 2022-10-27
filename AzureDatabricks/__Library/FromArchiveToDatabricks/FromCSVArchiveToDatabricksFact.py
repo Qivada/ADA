@@ -214,7 +214,7 @@ def getColumnsWithAlias(columns, alias):
 dfArchiveLogs = spark.sql(" \
   SELECT * \
   FROM   delta.`" + __ARCHIVE_LOG_PATH + "` \
-  WHERE  ArchiveDatetimeUTC > CAST('" + str(lastArchiveDatetimeUTC) + "' AS timestamp) \
+  WHERE  ArchiveDatetimeUTC > CAST('" + str(lastArchiveDatetimeUTC) + "' AS timestamp) AND `IsPurged` = 0 AND `IsIgnorable` = 0 \
   ORDER BY ArchiveDatetimeUTC ASC \
 ")
 
