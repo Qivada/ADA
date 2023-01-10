@@ -76,6 +76,6 @@ Data is commonly sent or made available to target system(s) from:
    - Worker type: Standard_D4s_v5
      - Min workers 1 and max workers e.g. 3 based on actual requirement
      - Consider using spot instances on development and test environments
-  - Enable autoscaling: Selected
+   - Enable autoscaling: Selected
      - For small development and test environments autoscaling might not be required
-  - Terminate after: Configure 30 minutes or less
+   - Terminate after: Configure 30 minutes or less
