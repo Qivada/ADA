@@ -7,8 +7,10 @@ Deploy Azure Data Lake Storage Gen2 with following containers:
   - Landing area for incoming data
 - archive
   - Files from landing area are archived into this container along with archival log information
+  - [Related notebooks](https://github.com/Qivada/ADA/tree/main/AzureDatabricks/__Library/FromIngestToArchive)
 - datahub
   - Processed data from archive e.g. change data capture (CDC) handled records over all archive files
+  - [Related notebooks](https://github.com/Qivada/ADA/tree/main/AzureDatabricks/__Library/FromArchiveToDatabricks)
 - databricks
   - Contains temporary files etc. that are required in some cases to e.g. transfer data into data warehouse using Databricks
 
