@@ -14,6 +14,9 @@ Deploy Azure Data Lake Storage Gen2 with following containers:
 - databricks
   - Contains temporary files etc. that are required in some cases to e.g. transfer data into data warehouse using Databricks
 
+> **Warning**
+> Container names are case sensitive
+
 # Recommended Structure for Data Lake
 - ingest
   - Data source e.g. AX, CRM, ...
@@ -30,6 +33,9 @@ Deploy Azure Data Lake Storage Gen2 with following containers:
     - Dataset e.g. LEDGERTRANS, Account, ...
       - log
       - data
+
+> **Warning**
+> Set access rights on root folder(s) before creating child folders.
 
 # Recommended Data Flow for Data Lake
 ~~~mermaid
