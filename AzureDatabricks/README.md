@@ -5,6 +5,7 @@ Collection of Azure Databricks notebooks to work with data lake and Azure Synaps
 Deploy Azure Data Lake Storage Gen2 with following containers:
 - ingest
   - Landing area for incoming data
+  - It is recommended use Parquet file format over other formats when applicable
 - archive
   - Files from landing area are archived into this container along with archival log information
   - [Related notebooks](https://github.com/Qivada/ADA/tree/main/AzureDatabricks/__Library/FromIngestToArchive)
