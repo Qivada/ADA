@@ -81,5 +81,5 @@ Data is commonly sent or made available to target system(s) from:
    - Terminate after: Configure 30 minutes or less
 5. If using Azure Databricks with Azure Data Factory V2 or Azure Synapse Analytics, configure related system assigned managed identity of the service as owner of the Azure Databricks workspace. This allows the service to use cluster(s) from the Azure Databricks workspace using the system assigned managed identity as authentication method.
 6. Use provided Azure Databricks [notebooks templates](https://github.com/Qivada/ADA/tree/main/AzureDatabricks/__Library)
-  - Make sure to place notebooks into repos of Azure Databricks workspace
-  - Make sure that each Azure Databricks workspace is connected to related repository branch e.g. 'development' branch is used with development workspace and 'production' branch is used with production workspace. This will allow code deployment between Azure Databricks worspakces through repository branches.
+   - Make sure to place notebooks into repos of Azure Databricks workspace
+   - Make sure that each Azure Databricks workspace is connected to related repository branch e.g. 'development' branch is used with development workspace and 'production' branch is used with production workspace. This will allow code deployment between Azure Databricks worspakces through repository branches.
