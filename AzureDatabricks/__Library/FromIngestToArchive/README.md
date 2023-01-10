@@ -1,7 +1,7 @@
 # Prerequisites
 1. Azure Data Lake Storage Gen2 contains following containers:
-  - ingest
-  - archive
+   - ingest
+   - archive
 2. Azure application registration (app) for authorizing Azure databricks operations against Azure Data Lake Storage Gen2 (data lake)
    - The app is authorized for data lake ingest and archive containers
    - Secret is known for the app
