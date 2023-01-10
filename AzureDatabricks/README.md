@@ -79,3 +79,4 @@ Data is commonly sent or made available to target system(s) from:
    - Enable autoscaling: Selected
      - For small development and test environments autoscaling might not be required
    - Terminate after: Configure 30 minutes or less
+5. If using Azure Databricks with Azure Data Factory V2 or Azure Synapse Analytics, configure related system assigned managed identity of the service as owner of the Azure Databricks workspace. This allows the service to use cluster(s) from the Azure Databricks workspace. 
