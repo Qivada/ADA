@@ -28,3 +28,22 @@ Deploy Azure Data Lake Storage Gen2 with following containers:
     - Dataset e.g. LEDGERTRANS, Account, ...
       - log
       - data
+
+# Recommended Data Flow for Data Lake
+~~~mermaid
+sequenceDiagram
+  [Integrator]-->>Ingest: Send file
+  loop Archive
+  Archive->>Ingest: List files
+  Ingest-->>Archive: Copy files
+  Archive->>Archive: Create log entries
+  Archive->>Ingest: Remove archived files
+  end
+  loop Data Hub
+  Data Hub->>Data Hub: Check log
+  Data Hub->>Archive: Check new files by log entry
+  Archive-->>Data Hub: Process new files
+  Data Hub->>Data Hub: Transform files into data hub
+  Data Hub->>Data Hub: Create log entry
+  end
+~~~
