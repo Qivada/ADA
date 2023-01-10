@@ -57,6 +57,6 @@ sequenceDiagram
 ~~~
 
 > :information_source:
-From data lake data is commonly sent or made available to target system(s) from:
+Data is commonly sent or made available to target system(s) from:
 > - Archive: When original data is required as is
 > - Data Hub: When only changes are required
