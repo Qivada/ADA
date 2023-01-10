@@ -27,3 +27,10 @@
    - blob-account-key
      - Access key (key 1 or key 2) of Azure Blob storage account
      - Note! Required only, if archive operation is done from Azure Blob Storage
+
+# FAQ
+**Q: What is purpose of log?**
+ - Contains information from archived file such as archive date, original file name, size of the file etc. This log is provided so that archived files can be queried effectively from archive without need for scanning all files from archive structure. Basically this is an index for archive about information what is actually archived and to what location.
+ 
+**Q: Why file is renamed to archive?**
+ - Renaming is done to prevent collisions with existing archived files. Original file name for archived file can be queried from archive log.
