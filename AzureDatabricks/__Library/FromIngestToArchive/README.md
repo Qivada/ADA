@@ -6,6 +6,9 @@
    - The app is authorized for data lake ingest and archive containers
    - Secret is known for the app
 
+> **Warning**
+> Container names are case sensitive
+
 # Required Configuration
 1. Attach Azure Key Vault into Azure Databricks using scope name 'KeyVault'
    - Note! Use common scope name between environments
