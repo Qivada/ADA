@@ -84,3 +84,25 @@ Data is commonly sent or made available to target system(s) from:
 6. Use provided Azure Databricks [notebooks templates](https://github.com/Qivada/ADA/tree/main/AzureDatabricks/__Library)
    - Make sure to place notebooks into repos of Azure Databricks workspace
    - Make sure that each Azure Databricks workspace is connected to related repository branch e.g. 'development' branch is used with development workspace and 'production' branch is used with production workspace. This will allow code deployment between Azure Databricks worspakces through repository branches.
+
+~~~mermaid
+graph TB
+    subgraph Azure VNET
+        SNET_PUBLIC[Databricks Public Subnet]
+        SNET_PRIVATE[Databricks Private Subnet]
+    end
+    
+    DATABRICKS[Azure Databricks]
+    STORAGE[Azure Data Lake Gen2]
+    KEYVAULT[Azure Key Vault]
+    
+    DATABRICKS --- SNET_PUBLIC
+    DATABRICKS --- SNET_PRIVATE
+    DATABRICKS -- Secret Scope --- KEYVAULT
+    
+    SNET_PUBLIC -- Firewall Rule --- KEYVAULT
+    SNET_PUBLIC -- Firewall Rule --- STORAGE
+    
+    
+    
+~~~
