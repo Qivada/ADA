@@ -48,7 +48,6 @@ __SECRET_NAME_BLOB_ACCOUNT = "blob-account"
 __SECRET_NAME_BLOB_ACCOUNT_KEY = "blob-account-key"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 
-__INGEST_PATH = "abfss://ingest@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __INGEST_PATH
 __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
 
