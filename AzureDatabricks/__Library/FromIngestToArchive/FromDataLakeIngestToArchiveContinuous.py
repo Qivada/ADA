@@ -49,6 +49,10 @@ __SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 __DATA_LAKE_URL = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-URL")
 
+__ARCHIVE_TARGET_DATABASE = "Qivada_ADA"
+__ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_")
+__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
+
 __INGEST_PATH = __DATA_LAKE_URL + "/" + __INGEST_PATH
 __ARCHIVE_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_LOG_PATH
@@ -232,3 +236,15 @@ while True:
     # Note that 1 billion "list files" operations/month cost over 3000€/month
     # Related: Note also that streaming delta tables are also polling underlying file system. On stream configuration define minimum polling interval e.g 5 seconds
     time.sleep(5)
+
+# COMMAND ----------
+
+#  Create archive log table metadata
+if spark.catalog._jcatalog.tableExists(__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME) == False:
+    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)
+    spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
+    spark.sql("""
+      CREATE TABLE """ + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME + """
+      USING DELTA
+      LOCATION '""" + __ARCHIVE_LOG_PATH + """'
+     """)

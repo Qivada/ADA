@@ -43,6 +43,10 @@ __SECRET_NAME_DATA_LAKE_APP_CLIENT_SECRET = "App-databricks-secret"
 __SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 
+__ARCHIVE_TARGET_DATABASE = "Qivada_ADA"
+__ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_")
+__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
+
 __INGEST_PATH = "abfss://ingest@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __INGEST_PATH
 __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
@@ -161,7 +165,19 @@ if archiveLogs:
   
     # 4. Optimize archive log
     print('Optimize archive log: ' + __ARCHIVE_LOG_PATH)
-    spark.sql('OPTIMIZE delta.`' + __ARCHIVE_LOG_PATH + '`').display()
+    spark.sql('OPTIMIZE delta.`' + __ARCHIVE_LOG_PATH + '`').display()   
+
+# COMMAND ----------
+
+#  Create archive log table metadata
+if spark.catalog._jcatalog.tableExists(__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME) == False:
+    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)
+    spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
+    spark.sql("""
+      CREATE TABLE """ + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME + """
+      USING DELTA
+      LOCATION '""" + __ARCHIVE_LOG_PATH + """'
+     """)
 
 # COMMAND ----------
 
