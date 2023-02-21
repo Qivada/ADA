@@ -64,9 +64,9 @@ Data is commonly sent or made available to target system(s) from:
 
 # Recommended Azure Databricks Deployment
 1. Deploy one Azure Databricks workspace per environment e.g. development, test or production.
-2. Configure with 'Bring Your Own VNET'. This enables firewall configurable connections from -and to Databricks
+2. Deploy with template [AzureDatabricks Template for VNet Injection with NAT Gateway](https://learn.microsoft.com/en-us/samples/azure/azure-quickstart-templates/databricks-all-in-one-template-for-vnet-injection-with-nat-gateway/)
 > **Warning**
-> Deployment with 'Bring Your Own VNET' is requirement for Azure Databricks to connect firewalled storage account.
+> Disable Public Ip -option must be set as true, otherwise cluster computing will fail to start.
 3. Deploy and configure Azure Key Vault per Databricks instance to store secrets and configuration values. Use scope name 'KeyVault' to support default configuration.
    - To configure Azure Key Vault open configuration dialog from: https://**[workspace unique id]**.azuredatabricks.net/#secrets/createScope
 4. Create cluster with following configuration:
