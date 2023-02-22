@@ -78,7 +78,7 @@ try:
         print('No partition by column pre SQL')  
 
     # Partition by columns e.g. __YearPartition, __MonthPartition
-      __PARTITION_BY_COLUMNS = ""  
+    __PARTITION_BY_COLUMNS = ""  
     try:
         __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
     except:
