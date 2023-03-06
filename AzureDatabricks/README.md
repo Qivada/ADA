@@ -87,10 +87,17 @@ Data is commonly sent or made available to target system(s) from:
 
 ~~~mermaid
 graph TB
-    subgraph Azure VNET
+    subgraph VNET[Azure VNET]
         SNET_PUBLIC[Databricks Public Subnet]
         SNET_PRIVATE[Databricks Private Subnet]
     end
+    
+    subgraph NAT[Azure NAT Gateway]
+        NAT_PUBLIC_IP[Static Public IP]
+    end
+    
+    SNET_PUBLIC --- NAT
+    SNET_PRIVATE --- NAT
     
     DATABRICKS[Azure Databricks]
     STORAGE[Azure Data Lake Gen2]
@@ -101,8 +108,7 @@ graph TB
     DATABRICKS -- Secret Scope --- KEYVAULT
     
     SNET_PUBLIC -- Firewall Rule --- KEYVAULT
-    SNET_PUBLIC -- Firewall Rule --- STORAGE
-    
-    
-    
+    NAT_PUBLIC_IP -- Firewall Rule --- KEYVAULT    
+    NAT_PUBLIC_IP -- Firewall Rule --- STORAGE
+    SNET_PUBLIC -- Firewall Rule --- STORAGE    
 ~~~
