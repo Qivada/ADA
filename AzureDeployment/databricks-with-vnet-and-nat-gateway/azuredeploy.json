@@ -111,8 +111,8 @@
 		"managedResourceGroupName": "[concat('databricks-rg-', parameters('databricksWorkspaceName'), '-', uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]",
 		"trimmedMRGName": "[substring(variables('managedResourceGroupName'), 0, min(length(variables('managedResourceGroupName')), 90))]",
 		"managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('trimmedMRGName'))]",
-		"databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]",
-		"databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
+		"databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('databricksNsgName'))]",
+		"databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]"
 	},
 	"resources": [
 		{
@@ -144,13 +144,13 @@
 				"name": "Standard"
 			},
 			"dependsOn": [
-				"[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]"
+				"[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]"
 			],
 			"properties": {
 				"idleTimeoutInMinutes": 4,
 				"publicIpAddresses": [
 					{
-						"id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]"
+						"id": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]"
 					}
 				]
 			}
@@ -161,7 +161,7 @@
 			"location": "[parameters('location')]",
 			"name": "[parameters('databricksVnetName')]",
 			"dependsOn": [
-				"[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]",
+				"[resourceId('Microsoft.Network/natGateways/', parameters('databricksNatGatewayName'))]",
 				"[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('databricksNsgName'))]"
 			],
 			"properties": {
@@ -179,7 +179,7 @@
 								"id": "[variables('databricksNsgId')]"
 							},
 							"natGateway": {
-								"id": "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]"
+								"id": "[resourceId('Microsoft.Network/natGateways/', parameters('databricksNatGatewayName'))]"
 							},
 							"serviceEndpoints": [
 								{
@@ -213,22 +213,8 @@
 								"id": "[variables('databricksNsgId')]"
 							},
 							"natGateway": {
-								"id": "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]"
+								"id": "[resourceId('Microsoft.Network/natGateways/', parameters('databricksNatGatewayName'))]"
 							},
-							"serviceEndpoints": [
-								{
-									"service": "Microsoft.KeyVault",
-									"locations": [
-										"*"
-									]
-								},
-								{
-									"service": "Microsoft.Storage",
-									"locations": [
-										"*"
-									]
-								}
-							],
 							"delegations": [
 								{
 									"name": "databricks-del-private",
