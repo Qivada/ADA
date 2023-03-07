@@ -181,6 +181,21 @@
 							"natGateway": {
 								"id": "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]"
 							},
+							"serviceEndpoints": [
+								{
+									"service": "Microsoft.KeyVault",
+									"locations": [
+										"*"
+									]
+								},
+								{
+									"service": "Microsoft.Storage",
+									"locations": [
+										"eastus",
+										"westus"
+									]
+								}
+							],
 							"delegations": [
 								{
 									"name": "databricks-del-public",
