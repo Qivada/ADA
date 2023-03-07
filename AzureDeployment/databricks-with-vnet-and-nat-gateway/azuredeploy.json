@@ -96,14 +96,21 @@
 			"metadata": {
 				"description": "The name of the Azure Databricks workspace to create."
 			}
-		}
+		},
+		"keyVaultName": {
+			"defaultValue": "kv-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+			"type": "string",
+			"metadata": {
+				"description": "The name of the Azure Key Vault to create."
+			}
+		}		
 	},
 	"variables": {
 		"managedResourceGroupName": "[concat('databricks-rg-', parameters('databricksWorkspaceName'), '-', uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]",
 		"trimmedMRGName": "[substring(variables('managedResourceGroupName'), 0, min(length(variables('managedResourceGroupName')), 90))]",
 		"managedResourceGroupId": "[concat(subscription().id, '/resourceGroups/', variables('trimmedMRGName'))]",
-		"nsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]",
-		"vnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
+		"databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]",
+		"databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
 	},
 	"resources": [
 		{
@@ -167,7 +174,7 @@
 						"properties": {
 							"addressPrefix": "[parameters('databricksPublicSubnetCidr')]",
 							"networkSecurityGroup": {
-								"id": "[variables('nsgId')]"
+								"id": "[variables('databricksNsgId')]"
 							},
 							"natGateway": {
 								"id": "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]"
@@ -187,7 +194,7 @@
 						"properties": {
 							"addressPrefix": "[parameters('databricksPrivateSubnetCidr')]",
 							"networkSecurityGroup": {
-								"id": "[variables('nsgId')]"
+								"id": "[variables('databricksNsgId')]"
 							},
 							"natGateway": {
 								"id": "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]"
@@ -222,7 +229,7 @@
 				"managedResourceGroupId": "[variables('managedResourceGroupId')]",
 				"parameters": {
 					"customVirtualNetworkId": {
-						"value": "[variables('vnetId')]"
+						"value": "[variables('databricksVnetId')]"
 					},
 					"customdatabricksPublicSubnetName": {
 						"value": "[parameters('databricksPublicSubnetName')]"
@@ -233,6 +240,44 @@
 					"enableNoPublicIp": {
 						"value": true
 					}
+				}
+			}
+		},
+		{
+			"type": "Microsoft.KeyVault/vaults",
+			"apiVersion": "2021-11-01-preview",
+			"name": "[parameters('keyVaultName')]",
+			"dependsOn": [
+				"[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]",
+				"[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]"
+			],
+			"location": "[parameters('location')]",
+			"properties": {
+				"enabledForDeployment": false,
+				"enabledForDiskEncryption": false,
+				"enabledForTemplateDeployment": false,
+				"enableSoftDelete": true,
+				"softDeleteRetentionInDays": 90,
+				"enableRbacAuthorization": false,
+				"enablePurgeProtection": true,
+				"sku": {
+					"family": "A",
+					"name": "standard"
+				},
+				"networkAcls": {
+					"bypass": "AzureServices",
+					"defaultAction": "Deny",
+					"ipRules": [
+						{
+							"value": "[reference(resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))).ipAddress]"
+						}
+					],
+					"virtualNetworkRules": [
+						{
+							"id": "[concat(variables('databricksVnetId'), '/subnets/', [parameters('databricksPublicSubnetName'))]",
+							"ignoreMissingVnetServiceEndpoint": false
+						}
+					]
 				}
 			}
 		}
