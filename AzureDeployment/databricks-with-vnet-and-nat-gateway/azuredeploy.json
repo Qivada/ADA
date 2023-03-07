@@ -265,7 +265,8 @@
 			"name": "[parameters('keyVaultName')]",
 			"dependsOn": [
 				"[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]",
-				"[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]"
+				"[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]",
+				"[resourceId('Microsoft.Databricks/workspaces/', parameters('databricksWorkspaceName'))]"
 			],
 			"location": "[parameters('location')]",
 			"properties": {
