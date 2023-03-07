@@ -247,10 +247,10 @@
 					"customVirtualNetworkId": {
 						"value": "[variables('databricksVnetId')]"
 					},
-					"customdatabricksPublicSubnetName": {
+					"customPublicSubnetName": {
 						"value": "[parameters('databricksPublicSubnetName')]"
 					},
-					"customdatabricksPrivateSubnetName": {
+					"customPrivateSubnetName": {
 						"value": "[parameters('databricksPrivateSubnetName')]"
 					},
 					"enableNoPublicIp": {
