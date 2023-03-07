@@ -100,7 +100,8 @@
 		"keyVaultName": {
 			"defaultValue": "kv-PROJECT-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
-			"pattern": "^[a-zA-Z\\d](?:[a-zA-Z\\d]|-(?=[a-zA-Z\\d])){0,24}$",
+			"minLength": 3,
+			"maxLength": 24
 			"metadata": {
 				"description": "The name of the Azure Key Vault to create."
 			}
