@@ -259,15 +259,14 @@
 				"enabledForDiskEncryption": false,
 				"enabledForTemplateDeployment": false,
 				"enableSoftDelete": true,
-				"softDeleteRetentionInDays": 90,
-				"enableRbacAuthorization": false,
+				"softDeleteRetentionInDays": 90,				
 				"enablePurgeProtection": true,
+				"enableRbacAuthorization": true,
 				"tenantId": "[subscription().tenantId]",
 				"sku": {
 					"family": "A",
 					"name": "standard"
 				},
-				"accessPolicies": [],
 				"networkAcls": {
 					"bypass": "AzureServices",
 					"defaultAction": "Deny",
