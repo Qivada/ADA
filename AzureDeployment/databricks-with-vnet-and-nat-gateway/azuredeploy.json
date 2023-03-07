@@ -10,21 +10,21 @@
 			}
 		},
 		"natGatewayName": {
-			"defaultValue": "myNATgateway",
+			"defaultValue": "nat-[project]-dbw-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the NAT gateway to be attached to the workspace subnets."
 			}
 		},
 		"natGatewayPublicIpName": {
-			"defaultValue": "myNATGatewayPublicIP",
+			"defaultValue": "pip-[project]-dbw-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the NAT gateway public IP."
 			}
 		},
 		"nsgName": {
-			"defaultValue": "databricks-nsg",
+			"defaultValue": "nsg-[project]-dbw-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the network security group to create."
@@ -50,7 +50,7 @@
 			}
 		},
 		"privateSubnetName": {
-			"defaultValue": "private-subnet",
+			"defaultValue": "snet-[project]-dbw-private-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the private subnet to create."
@@ -64,7 +64,7 @@
 			}
 		},
 		"publicSubnetName": {
-			"defaultValue": "public-subnet",
+			"defaultValue": "snet-[project]-dbw-public-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the public subnet to create."
@@ -78,13 +78,14 @@
 			}
 		},
 		"vnetName": {
-			"defaultValue": "databricks-vnet",
+			"defaultValue": "vnet-[project]-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the virtual network to create."
 			}
 		},
 		"workspaceName": {
+			"defaultValue": "dbw-[project]-[environment]-[region]-[instance]",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the Azure Databricks workspace to create."
