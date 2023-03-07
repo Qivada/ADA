@@ -16,21 +16,21 @@
 			}
 		},
 		"natGatewayName": {
-			"defaultValue": "nat-{PROJECT}-dbw-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "nat-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the NAT gateway to be attached to the workspace subnets."
 			}
 		},
 		"natGatewayPublicIpName": {
-			"defaultValue": "pip-{PROJECT}-dbw-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "pip-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the NAT gateway public IP."
 			}
 		},
 		"nsgName": {
-			"defaultValue": "nsg-{PROJECT}-dbw-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "nsg-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the network security group to create."
@@ -56,7 +56,7 @@
 			}
 		},
 		"privateSubnetName": {
-			"defaultValue": "snet-{PROJECT}-dbw-private-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "snet-PROJECT-dbw-private-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the private subnet to create."
@@ -70,7 +70,7 @@
 			}
 		},
 		"publicSubnetName": {
-			"defaultValue": "snet-{PROJECT}-dbw-public-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "snet-PROJECT-dbw-public-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the public subnet to create."
@@ -84,14 +84,14 @@
 			}
 		},
 		"vnetName": {
-			"defaultValue": "vnet-{PROJECT}-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "vnet-PROJECT-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the virtual network to create."
 			}
 		},
 		"workspaceName": {
-			"defaultValue": "dbw-{PROJECT}-{ENVIRONMENT}-{REGION}-{INSTANCE}",
+			"defaultValue": "dbw-PROJECT-ENVIRONMENT-REGION-INSTANCE",
 			"type": "string",
 			"metadata": {
 				"description": "The name of the Azure Databricks workspace to create."
