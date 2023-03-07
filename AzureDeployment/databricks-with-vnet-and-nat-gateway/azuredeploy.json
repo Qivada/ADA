@@ -17,7 +17,7 @@
 			}
 		},
 		"natGatewayPublicIpName": {
-			"defaultValue": "pip-[project]-dbw-[environment]-[region]-[instance]",
+			"defaultValue": "pip-{project}-dbw-{environment}-{region}-{instance}",
 			"type": "string",
 			"metadata": {
 				"description": "Name of the NAT gateway public IP."
