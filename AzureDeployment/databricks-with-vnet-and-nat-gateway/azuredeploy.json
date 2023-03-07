@@ -274,7 +274,7 @@
 					],
 					"virtualNetworkRules": [
 						{
-							"id": "[concat(variables('databricksVnetId'), '/subnets/', [parameters('databricksPublicSubnetName'))]",
+							"id": "[concat(variables('databricksVnetId'), '/subnets/', parameters('databricksPublicSubnetName'))]",
 							"ignoreMissingVnetServiceEndpoint": false
 						}
 					]
