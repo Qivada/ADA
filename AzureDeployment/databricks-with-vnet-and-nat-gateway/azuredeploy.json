@@ -267,6 +267,7 @@
 					"family": "A",
 					"name": "standard"
 				},
+				"accessPolicies": [],
 				"networkAcls": {
 					"bypass": "AzureServices",
 					"defaultAction": "Deny",
@@ -281,7 +282,8 @@
 							"ignoreMissingVnetServiceEndpoint": false
 						}
 					]
-				}
+				},
+				"publicNetworkAccess": "Enabled"
 			}
 		}
 	]
