@@ -27,7 +27,7 @@ graph TB
     NAT_PUBLIC_IP -- Firewall Rule --- KEYVAULT    
 ~~~
 
-## Required Manual Steps After Deployment
+## Required Manual Steps After Template Deployment
 1. Configure Azure Key Vault connection into Databricks
    - Use scope name 'KeyVault' to support default configuration.
    - Configuration dialog is on location: https://**[workspace unique id]**.azuredatabricks.net/#secrets/createScope
