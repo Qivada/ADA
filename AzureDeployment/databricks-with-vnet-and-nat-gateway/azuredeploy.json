@@ -5,8 +5,15 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "7976349385980389931"
-    }
+      "templateHash": "2689387434591945382"
+    },
+    "author": "Qivada",
+    "changeHistory": [
+      {
+        "date": "2023-03-09",
+        "change": "Initial version"
+      }
+    ]
   },
   "parameters": {
     "param_location": {
