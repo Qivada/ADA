@@ -1,0 +1,731 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.15.31.15270",
+      "templateHash": "7181050426284865680"
+    },
+    "author": "Qivada",
+    "changeHistory": [
+      {
+        "date": "2023-03-09",
+        "change": "Initial version"
+      }
+    ]
+  },
+  "parameters": {
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "databricksAppClientId": {
+      "type": "string",
+      "defaultValue": "Application (client) ID",
+      "maxLength": 36,
+      "minLength": 36,
+      "metadata": {
+        "description": "Application (client) ID of application created for databricks"
+      }
+    },
+    "databricksManagedAppObjectId": {
+      "type": "string",
+      "defaultValue": "Object ID from managed app (Enterprise Application)",
+      "maxLength": 36,
+      "minLength": 36,
+      "metadata": {
+        "description": "Object ID of managed application created for databricks"
+      }
+    },
+    "databricksAppSecret": {
+      "type": "securestring",
+      "defaultValue": "",
+      "maxLength": 40,
+      "minLength": 40,
+      "metadata": {
+        "description": "Secret of application created for databricks"
+      }
+    },
+    "databricksAppSecretExpire": {
+      "type": "string",
+      "defaultValue": "yyyy-MM-dd",
+      "maxLength": 10,
+      "minLength": 10,
+      "metadata": {
+        "description": "Expiration date of secret of application created for databricks:\r\n- Use format yyyy-MM-dd e.g. 2022-12-31\r\n"
+      }
+    },
+    "databricksNatGatewayName": {
+      "type": "string",
+      "defaultValue": "nat-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "Name of the NAT gateway to be attached to the workspace subnets."
+      }
+    },
+    "databricksNatGatewayPublicIpName": {
+      "type": "string",
+      "defaultValue": "pip-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "Name of the NAT gateway public IP."
+      }
+    },
+    "databricksNsgName": {
+      "type": "string",
+      "defaultValue": "nsg-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "The name of the network security group to create."
+      }
+    },
+    "databricksVnetName": {
+      "type": "string",
+      "defaultValue": "vnet-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "The name of the virtual network to create."
+      }
+    },
+    "databricksVnetCidr": {
+      "type": "string",
+      "defaultValue": "10.1.0.0/21",
+      "metadata": {
+        "description": "Cidr range for the vnet."
+      }
+    },
+    "databricksPublicSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-PROJECT-dbw-public-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "The name of the public subnet to create."
+      }
+    },
+    "databricksPublicSubnetCidr": {
+      "type": "string",
+      "defaultValue": "10.1.0.0/24",
+      "metadata": {
+        "description": "Cidr range for the public subnet."
+      }
+    },
+    "databricksPrivateSubnetName": {
+      "type": "string",
+      "defaultValue": "snet-PROJECT-dbw-private-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "The name of the private subnet to create."
+      }
+    },
+    "databricksPrivateSubnetCidr": {
+      "type": "string",
+      "defaultValue": "10.1.1.0/24",
+      "metadata": {
+        "description": "Cidr range for the private subnet."
+      }
+    },
+    "databricksWorkspaceName": {
+      "type": "string",
+      "defaultValue": "dbw-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+      "metadata": {
+        "description": "The name of the Azure Databricks workspace to create."
+      }
+    },
+    "keyVaultName": {
+      "type": "string",
+      "defaultValue": "kv-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+      "maxLength": 24,
+      "minLength": 3,
+      "metadata": {
+        "description": "The name of the Azure Key Vault to create."
+      }
+    },
+    "dataLakeStorageName": {
+      "type": "string",
+      "defaultValue": "dls-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+      "maxLength": 24,
+      "minLength": 3,
+      "metadata": {
+        "description": "The name of the Azure data lake storage to create."
+      }
+    },
+    "synapseWorkspaceName": {
+      "type": "string",
+      "defaultValue": "syn-PROJECT-ENVIRONMENT-REGION-INSTANCE",
+      "maxLength": 50,
+      "minLength": 5,
+      "metadata": {
+        "description": "The name of the Azure synapse workspace to create."
+      }
+    },
+    "synapseWorkspaceSqlAdministratorLogin": {
+      "type": "string",
+      "defaultValue": "",
+      "maxLength": 50,
+      "minLength": 5,
+      "metadata": {
+        "description": "The name of the Azure synapse workspace SQL administrator login to create."
+      }
+    },
+    "synapseWorkspaceSqlAdministratorLoginPassword": {
+      "type": "securestring",
+      "defaultValue": "",
+      "maxLength": 50,
+      "minLength": 10,
+      "metadata": {
+        "description": "The name of the Azure synapse workspace SQL administrator login to create."
+      }
+    }
+  },
+  "variables": {
+    "var_managedResourceGroupName": "[format('databricks-rg-{0}-{1}', parameters('databricksWorkspaceName'), uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]",
+    "var_trimmedMRGName": "[substring(variables('var_managedResourceGroupName'), 0, min(length(variables('var_managedResourceGroupName')), 90))]",
+    "var_managedResourceGroupId": "[format('{0}/resourceGroups/{1}', subscription().id, variables('var_trimmedMRGName'))]",
+    "var_databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('databricksNsgName'))]",
+    "var_databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]",
+    "var_databricksNatId": "[resourceId('Microsoft.Network/natGateways/', parameters('databricksNatGatewayName'))]",
+    "var_databricksNatPipId": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2022-11-01",
+      "name": "[format('{0}/{1}', parameters('keyVaultName'), 'App-databricks-id')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "string",
+        "value": "[parameters('databricksAppClientId')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2022-11-01",
+      "name": "[format('{0}/{1}', parameters('keyVaultName'), 'App-databricks-tenant-id')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "string",
+        "value": "[subscription().tenantId]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2022-11-01",
+      "name": "[format('{0}/{1}', parameters('keyVaultName'), 'App-databricks-secret')]",
+      "properties": {
+        "attributes": {
+          "enabled": true,
+          "exp": "[dateTimeToEpoch(parameters('databricksAppSecretExpire'))]"
+        },
+        "contentType": "string",
+        "value": "[parameters('databricksAppSecret')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults/secrets",
+      "apiVersion": "2022-11-01",
+      "name": "[format('{0}/{1}', parameters('keyVaultName'), 'Storage-Name')]",
+      "properties": {
+        "attributes": {
+          "enabled": true
+        },
+        "contentType": "string",
+        "value": "[parameters('dataLakeStorageName')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]",
+        "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/{1}', parameters('dataLakeStorageName'), 'default')]",
+      "properties": {
+        "deleteRetentionPolicy": {
+          "allowPermanentDelete": false,
+          "enabled": true,
+          "days": 90
+        },
+        "containerDeleteRetentionPolicy": {
+          "enabled": true,
+          "days": 90
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/firewallRules",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), 'allowAll')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "255.255.255.255"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/firewallRules",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), 'AllowAllWindowsAzureIps')]",
+      "properties": {
+        "startIpAddress": "0.0.0.0",
+        "endIpAddress": "0.0.0.0"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/managedIdentitySqlControlSettings",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), 'default')]",
+      "properties": {
+        "grantSqlControlToManagedIdentity": {
+          "desiredState": "Enabled"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces/dedicatedSQLminimalTlsSettings",
+      "apiVersion": "2021-06-01",
+      "name": "[format('{0}/{1}', parameters('synapseWorkspaceName'), 'default')]",
+      "properties": {
+        "minimalTlsVersion": "1.2"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('databricksNatGatewayPublicIpName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "publicIPAddressVersion": "IPv4",
+        "publicIPAllocationMethod": "Static",
+        "idleTimeoutInMinutes": 4
+      }
+    },
+    {
+      "type": "Microsoft.Network/natGateways",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('databricksNatGatewayName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard"
+      },
+      "properties": {
+        "idleTimeoutInMinutes": 4,
+        "publicIpAddresses": [
+          {
+            "id": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]"
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('databricksNsgName')]",
+      "location": "[parameters('location')]"
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('databricksVnetName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('databricksVnetCidr')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('databricksPublicSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('databricksPublicSubnetCidr')]",
+              "networkSecurityGroup": {
+                "id": "[variables('var_databricksNsgId')]"
+              },
+              "natGateway": {
+                "id": "[variables('var_databricksNatId')]"
+              },
+              "serviceEndpoints": [
+                {
+                  "service": "Microsoft.KeyVault",
+                  "locations": [
+                    "*"
+                  ]
+                },
+                {
+                  "service": "Microsoft.Storage",
+                  "locations": [
+                    "*"
+                  ]
+                }
+              ],
+              "delegations": [
+                {
+                  "name": "databricks-del-public",
+                  "properties": {
+                    "serviceName": "Microsoft.Databricks/workspaces"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "[parameters('databricksPrivateSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('databricksPrivateSubnetCidr')]",
+              "networkSecurityGroup": {
+                "id": "[variables('var_databricksNsgId')]"
+              },
+              "natGateway": {
+                "id": "[variables('var_databricksNatId')]"
+              },
+              "delegations": [
+                {
+                  "name": "databricks-del-private",
+                  "properties": {
+                    "serviceName": "Microsoft.Databricks/workspaces"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Databricks/workspaces",
+      "apiVersion": "2023-02-01",
+      "name": "[parameters('databricksWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Premium"
+      },
+      "properties": {
+        "managedResourceGroupId": "[variables('var_managedResourceGroupId')]",
+        "parameters": {
+          "customVirtualNetworkId": {
+            "value": "[variables('var_databricksVnetId')]"
+          },
+          "customPublicSubnetName": {
+            "value": "[parameters('databricksPublicSubnetName')]"
+          },
+          "customPrivateSubnetName": {
+            "value": "[parameters('databricksPrivateSubnetName')]"
+          },
+          "enableNoPublicIp": {
+            "value": true
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.KeyVault/vaults",
+      "apiVersion": "2022-11-01",
+      "name": "[parameters('keyVaultName')]",
+      "location": "[parameters('location')]",
+      "properties": {
+        "enabledForDeployment": false,
+        "enabledForDiskEncryption": false,
+        "enabledForTemplateDeployment": false,
+        "enableSoftDelete": true,
+        "softDeleteRetentionInDays": 90,
+        "enablePurgeProtection": true,
+        "enableRbacAuthorization": false,
+        "tenantId": "[subscription().tenantId]",
+        "sku": {
+          "family": "A",
+          "name": "standard"
+        },
+        "accessPolicies": [],
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "bypass": "AzureServices",
+          "ipRules": [
+            {
+              "value": "[reference(variables('var_databricksNatPipId')).ipAddress]"
+            }
+          ],
+          "virtualNetworkRules": [
+            {
+              "id": "[format('{0}/subnets/{1}', variables('var_databricksVnetId'), parameters('databricksPublicSubnetName'))]",
+              "ignoreMissingVnetServiceEndpoint": false
+            }
+          ]
+        },
+        "publicNetworkAccess": "Enabled"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts",
+      "apiVersion": "2022-09-01",
+      "name": "[parameters('dataLakeStorageName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_GRS"
+      },
+      "kind": "StorageV2",
+      "properties": {
+        "dnsEndpointType": "Standard",
+        "defaultToOAuthAuthentication": true,
+        "publicNetworkAccess": "Enabled",
+        "allowCrossTenantReplication": false,
+        "isSftpEnabled": false,
+        "minimumTlsVersion": "TLS1_2",
+        "allowBlobPublicAccess": false,
+        "allowSharedKeyAccess": false,
+        "isHnsEnabled": true,
+        "supportsHttpsTrafficOnly": true,
+        "accessTier": "Hot",
+        "encryption": {
+          "requireInfrastructureEncryption": false,
+          "keySource": "Microsoft.Storage",
+          "services": {
+            "file": {
+              "keyType": "Account",
+              "enabled": true
+            },
+            "blob": {
+              "keyType": "Account",
+              "enabled": true
+            }
+          }
+        },
+        "networkAcls": {
+          "defaultAction": "Deny",
+          "bypass": "AzureServices",
+          "virtualNetworkRules": [
+            {
+              "id": "[format('{0}/subnets/{1}', variables('var_databricksVnetId'), parameters('databricksPublicSubnetName'))]",
+              "action": "Allow"
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/default/archive', parameters('dataLakeStorageName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/default/databricks', parameters('dataLakeStorageName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/default/datahub', parameters('dataLakeStorageName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/default/ingest', parameters('dataLakeStorageName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+      "apiVersion": "2022-09-01",
+      "name": "[format('{0}/default/synapse', parameters('dataLakeStorageName'))]",
+      "properties": {
+        "publicAccess": "None"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('dataLakeStorageName'))]",
+      "name": "[guid(subscription().id, parameters('dataLakeStorageName'), 'Storage Blob Data Contributor', parameters('databricksManagedAppObjectId'))]",
+      "properties": {
+        "principalId": "[parameters('databricksManagedAppObjectId')]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Synapse/workspaces",
+      "apiVersion": "2021-06-01",
+      "name": "[parameters('synapseWorkspaceName')]",
+      "location": "[parameters('location')]",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "properties": {
+        "defaultDataLakeStorage": {
+          "resourceId": "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]",
+          "accountUrl": "[reference(parameters('dataLakeStorageName')).primaryEndpoints.dfs]",
+          "filesystem": "synapse",
+          "createManagedPrivateEndpoint": true
+        },
+        "managedVirtualNetwork": "default",
+        "managedResourceGroupName": "[format('rg-{0}', parameters('synapseWorkspaceName'))]",
+        "sqlAdministratorLogin": "[parameters('synapseWorkspaceSqlAdministratorLogin')]",
+        "sqlAdministratorLoginPassword": "[parameters('synapseWorkspaceSqlAdministratorLoginPassword')]",
+        "publicNetworkAccess": "Enabled",
+        "azureADOnlyAuthentication": false,
+        "trustedServiceBypassEnabled": false
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]",
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices/containers', split(format('{0}/default/synapse', parameters('dataLakeStorageName')), '/')[0], split(format('{0}/default/synapse', parameters('dataLakeStorageName')), '/')[1], split(format('{0}/default/synapse', parameters('dataLakeStorageName')), '/')[2])]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('dataLakeStorageName'))]",
+      "name": "[guid(subscription().id, parameters('dataLakeStorageName'), 'Storage Blob Data Contributor', parameters('synapseWorkspaceName'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')), '2021-06-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName'))]",
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    },
+    {
+      "type": "Microsoft.Authorization/roleAssignments",
+      "apiVersion": "2022-04-01",
+      "scope": "[format('Microsoft.Databricks/workspaces/{0}', parameters('databricksWorkspaceName'))]",
+      "name": "[guid(subscription().id, parameters('databricksWorkspaceName'), 'Owner', parameters('synapseWorkspaceName'))]",
+      "properties": {
+        "principalId": "[reference(resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')), '2021-06-01', 'full').identity.principalId]",
+        "principalType": "ServicePrincipal",
+        "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Databricks/workspaces', parameters('databricksWorkspaceName'))]",
+        "[resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName'))]"
+      ]
+    }
+  ],
+  "outputs": {
+    "powerShell_1": {
+      "type": "string",
+      "value": "[format('Select-AzSubscription -SubscriptionId \"{0}\"; Add-AzStorageAccountNetworkRule -ResourceGroupName \"{1}\" -Name \"{2}\" -TenantId \"{3}\" -ResourceId \"{4}\"', subscription().subscriptionId, resourceGroup().name, parameters('dataLakeStorageName'), subscription().tenantId, resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')))]",
+      "metadata": {
+        "description": "Powershell command to authorize Synapse Workspace to Data Lake Storage Firewall"
+      }
+    },
+    "powerShell_2": {
+      "type": "string",
+      "value": "[format('$myUserId=az ad signed-in-user show --query id -o tsv; az role assignment create --role \"Storage Blob Data Contributor\" --assignee $myUserId --scope \"{0}\"', resourceId('Microsoft.Storage/storageAccounts', parameters('dataLakeStorageName')))]",
+      "metadata": {
+        "description": "Powershell command to authorize current user as \"Storage Blob Data Contributor\" to Data Lake Storage Firewall"
+      }
+    },
+    "databricks_url": {
+      "type": "string",
+      "value": "[format('https://{0}/#secrets/createScope', reference(resourceId('Microsoft.Databricks/workspaces', parameters('databricksWorkspaceName')), '2023-02-01').workspaceUrl)]",
+      "metadata": {
+        "description": "URL to create secret scope pointing to Key Vault in Databricks"
+      }
+    },
+    "databricks_url_scopeName": {
+      "type": "string",
+      "value": "KeyVault",
+      "metadata": {
+        "description": "Value to use on \"Scope Name\" when creating secret scope pointing to Key Vault in Databricks"
+      }
+    },
+    "databricks_url_managePrincipal": {
+      "type": "string",
+      "value": "All Users",
+      "metadata": {
+        "description": "Value to use on \"Manage Principal\" when creating secret scope pointing to Key Vault in Databricks"
+      }
+    },
+    "databricks_url_dnsName": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName')), '2022-11-01').vaultUri]",
+      "metadata": {
+        "description": "Value to use on \"DNS Name\" when creating secret scope pointing to Key Vault in Databricks"
+      }
+    },
+    "databricks_url_resourceId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]",
+      "metadata": {
+        "description": "Value to use on \"Resource ID\" when creating secret scope pointing to Key Vault in Databricks"
+      }
+    }
+  }
+}
