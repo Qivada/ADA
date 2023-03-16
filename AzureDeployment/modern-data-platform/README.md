@@ -11,7 +11,6 @@
    - With browser open link in output 'databricks_url' and in dialog use values 'databricks_url_???'
    ![image](https://user-images.githubusercontent.com/109618668/225620899-d1ddd196-7d91-4d82-8455-95adead1a652.png)
 
-
 ## Deployment Template Content
 ~~~mermaid
 graph TB
