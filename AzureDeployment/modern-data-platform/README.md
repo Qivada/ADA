@@ -12,7 +12,7 @@
    ![image](https://user-images.githubusercontent.com/109618668/225620899-d1ddd196-7d91-4d82-8455-95adead1a652.png)
 
 
-## Template Deployment Content
+## Deployment Template Content
 ~~~mermaid
 graph TB
     subgraph VNET[Azure VNET]
