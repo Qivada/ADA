@@ -12,7 +12,7 @@
 
 3. From registered application navigate to managed application (enterprise application) and collect following information:
    - Object ID
-   ![image](https://user-images.githubusercontent.com/109618668/225613797-c43b9eba-9ee8-4ac3-bdd1-4093bee6daf4.png)
+   ![image](https://user-images.githubusercontent.com/109618668/225617999-a4fae278-b456-4b30-8baa-d9d503b61d95.png)
    ![image](https://user-images.githubusercontent.com/109618668/225614069-178e9f7b-8b59-4fc2-b3ec-0ac6d9558408.png)
    
 4. Open registered application and create secret. Collect following information:
