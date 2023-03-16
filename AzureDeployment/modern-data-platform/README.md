@@ -37,10 +37,10 @@ graph TB
     
     subgraph KEY_VAULT[Azure Key Vault]
         KEY_VAULT_SECRETS[Secrets]
-        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_001[App-databricks-id]
-        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_002[App-databricks-tenant-id]
-        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_003[App-databricks-secret]
-        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_004[Storage-Name]
+        KEY_VAULT_SECRETS ---|Secret| KEY_VAULT_SECRET_001[App-databricks-id]
+        KEY_VAULT_SECRETS ---|Secret| KEY_VAULT_SECRET_002[App-databricks-tenant-id]
+        KEY_VAULT_SECRETS ---|Secret| KEY_VAULT_SECRET_003[App-databricks-secret]
+        KEY_VAULT_SECRETS ---|Secret| KEY_VAULT_SECRET_004[Storage-Name]
     end
     
     DATABRICKS === VNET
