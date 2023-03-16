@@ -6,7 +6,7 @@
 1. Register application for Azure Databricks. See instructions [here](https://github.com/Qivada/ADA/tree/main/AzureDeployment/register-app)
 
 ## Post-Deployment
-1. From deployment template output
+1. From deployment template outputs
    - With cloud shell run outputs of 'powerShell_1' and 'powerShell_2'
    - With browser open link in output 'databricks_url' and in dialog use values 'databricks_url_???'
    ![image](https://user-images.githubusercontent.com/109618668/225620899-d1ddd196-7d91-4d82-8455-95adead1a652.png)
