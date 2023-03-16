@@ -16,7 +16,7 @@ graph TB
     
     subgraph SYNAPSE_ANALYTICS[Azure Synapse Analytics]
       SYNAPSE_WORKSPACE[Workspace]
-      SYNAPSE_WORKSPACE_MANAGED_IDENTITY[Managed Identity]      
+      SYNAPSE_WORKSPACE_MANAGED_IDENTITY{{Managed Identity}}
     end
     
     subgraph DATA_LAKE[Data Lake Storage]
@@ -28,11 +28,11 @@ graph TB
       DATA_LAKE_STORAGE ---|Container| DATA_LAKE_STORAGE_CONTAINER_DATABRICKS[Databricks]
     end
     
-    VNET --- NAT
+    VNET === NAT
     
     subgraph DATABRICKS[Azure Databricks]
         DATABRICKS_WORKSPACE[Workspace]
-        DATABRICKS_APP_REGISTRATION[App Registration]
+        DATABRICKS_APP_REGISTRATION{{App Registration}}
     end
     
     subgraph KEY_VAULT[Azure Key Vault]
@@ -43,8 +43,7 @@ graph TB
         KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_004[Storage-Name]
     end
     
-    DATABRICKS --- SNET_PUBLIC
-    DATABRICKS --- SNET_PRIVATE
+    DATABRICKS === VNET
     
     SYNAPSE_WORKSPACE_MANAGED_IDENTITY ---|Storage Blob Data Contributor|DATA_LAKE
     SYNAPSE_WORKSPACE_MANAGED_IDENTITY ---|Owner|DATABRICKS
@@ -54,4 +53,6 @@ graph TB
     SYNAPSE_ANALYTICS ---|Firewall|DATA_LAKE
     SNET_PUBLIC ---|Firewall|DATA_LAKE
     SNET_PUBLIC ---|Firewall|KEY_VAULT
+    
+    DATABRICKS ---|Secret scope|KEY_VAULT_SECRETS
 ~~~
