@@ -30,14 +30,25 @@ graph TB
     
     VNET --- NAT
     
-    DATABRICKS[Azure Databricks]
-    KEY_VAULT[Key Vault]    
+    subgraph DATABRICKS[Azure Databricks]
+        DATABRICKS_WORKSPACE[Workspace]
+        DATABRICKS_APP_REGISTRATION[App Registration]
+    end
+    
+    subgraph KEY_VAULT[Azure Key Vault]
+        KEY_VAULT_SECRETS[Secrets]
+        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_001[App-databricks-id]
+        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_002[App-databricks-tenant-id]
+        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_003[App-databricks-secret]
+        KEY_VAULT_SECRETS --- KEY_VAULT_SECRET_004[Storage-Name]
+    end
     
     DATABRICKS --- SNET_PUBLIC
     DATABRICKS --- SNET_PRIVATE
     
     SYNAPSE_WORKSPACE_MANAGED_IDENTITY ---|Storage Blob Data Contributor|DATA_LAKE
     SYNAPSE_WORKSPACE_MANAGED_IDENTITY ---|Owner|DATABRICKS
+    DATABRICKS_APP_REGISTRATION ---|Storage Blob Data Contributor|DATA_LAKE
     
     NAT_PUBLIC_IP ---|Firewall|KEY_VAULT    
     SYNAPSE_ANALYTICS ---|Firewall|DATA_LAKE
