@@ -54,5 +54,5 @@ graph TB
     SNET_PUBLIC ---|Firewall|DATA_LAKE
     SNET_PUBLIC ---|Firewall|KEY_VAULT
     
-    DATABRICKS ---|Secret scope|KEY_VAULT_SECRETS
+    DATABRICKS_WORKSPACE ---|Secret scope|KEY_VAULT
 ~~~
