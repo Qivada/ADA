@@ -75,6 +75,13 @@ param databricksWorkspaceName string = 'dbw-PROJECT-ENVIRONMENT-REGION-INSTANCE'
 @maxLength(24)
 param keyVaultName string = 'kv-PROJECT-ENVIRONMENT-REGION-INSTANCE'
 
+@description('''
+Enable purge protection on the Azure Key Vault:
+- True = Purge protection enabled. Key vault cannot be created again with same name after deletion.
+- False = Purge protection disabled. Key vault can be created instantly with same name after deleetion
+''')
+param keyVaultEnablePurgeProtection bool = false
+
 @description('The name of the Azure data lake storage to create.')
 @minLength(3)
 @maxLength(24)
@@ -258,7 +265,7 @@ resource resource_keyvault 'Microsoft.KeyVault/vaults@2022-11-01' = {
         enabledForTemplateDeployment: false
         enableSoftDelete: true
         softDeleteRetentionInDays: 90
-        enablePurgeProtection: true
+        enablePurgeProtection: (keyVaultEnablePurgeProtection) ? true : null
         enableRbacAuthorization: false
         tenantId: subscription().tenantId
         sku: {
@@ -540,7 +547,7 @@ resource resource_databricks_synapse_access 'Microsoft.Authorization/roleAssignm
 }
 
 @description('Powershell command to authorize Synapse Workspace to Data Lake Storage Firewall')
-output powerShell_1 string = 'Select-AzSubscription -SubscriptionId "${subscription().subscriptionId}"; Add-AzStorageAccountNetworkRule -ResourceGroupName "${resourceGroup().name}" -Name "${resource_data_lake_storage.name}" -TenantId "${subscription().tenantId}" -ResourceId "${resource_synapse.id}"'
+output powerShell_1 string = 'Select-AzSubscription -SubscriptionId "${subscription().subscriptionId}" && Add-AzStorageAccountNetworkRule -ResourceGroupName "${resourceGroup().name}" -Name "${resource_data_lake_storage.name}" -TenantId "${subscription().tenantId}" -ResourceId "${resource_synapse.id}"'
 
 @description('Powershell command to authorize current user as "Storage Blob Data Contributor" to Data Lake Storage Firewall')
 output powerShell_2 string = '$myUserId=az ad signed-in-user show --query id -o tsv; az role assignment create --role "Storage Blob Data Contributor" --assignee $myUserId --scope "${resource_data_lake_storage.id}"'

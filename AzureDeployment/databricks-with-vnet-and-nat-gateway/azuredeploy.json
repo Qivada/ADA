@@ -5,46 +5,46 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "2689387434591945382"
+      "templateHash": "16912311267992369809"
     },
     "author": "Qivada",
     "changeHistory": [
       {
-        "date": "2023-03-09",
+        "date": "2023-03-16",
         "change": "Initial version"
       }
     ]
   },
   "parameters": {
-    "param_location": {
+    "location": {
       "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
         "description": "Location for all resources."
       }
     },
-    "param_databricksNatGatewayName": {
+    "databricksNatGatewayName": {
       "type": "string",
       "defaultValue": "nat-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "Name of the NAT gateway to be attached to the workspace subnets."
       }
     },
-    "param_databricksNatGatewayPublicIpName": {
+    "databricksNatGatewayPublicIpName": {
       "type": "string",
       "defaultValue": "pip-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "Name of the NAT gateway public IP."
       }
     },
-    "param_databricksNsgName": {
+    "databricksNsgName": {
       "type": "string",
       "defaultValue": "nsg-PROJECT-dbw-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "The name of the network security group to create."
       }
     },
-    "param_databricksPricingTier": {
+    "databricksPricingTier": {
       "type": "string",
       "defaultValue": "premium",
       "allowedValues": [
@@ -56,80 +56,70 @@
         "description": "The pricing tier of workspace."
       }
     },
-    "param_databricksVnetName": {
+    "databricksVnetName": {
       "type": "string",
       "defaultValue": "vnet-PROJECT-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "The name of the virtual network to create."
       }
     },
-    "param_databricksVnetCidr": {
+    "databricksVnetCidr": {
       "type": "string",
       "defaultValue": "10.1.0.0/21",
       "metadata": {
         "description": "Cidr range for the vnet."
       }
     },
-    "param_databricksPublicSubnetName": {
+    "databricksPublicSubnetName": {
       "type": "string",
       "defaultValue": "snet-PROJECT-dbw-public-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "The name of the public subnet to create."
       }
     },
-    "param_databricksPublicSubnetCidr": {
+    "databricksPublicSubnetCidr": {
       "type": "string",
       "defaultValue": "10.1.0.0/24",
       "metadata": {
         "description": "Cidr range for the public subnet."
       }
     },
-    "param_databricksPrivateSubnetName": {
+    "databricksPrivateSubnetName": {
       "type": "string",
       "defaultValue": "snet-PROJECT-dbw-private-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "The name of the private subnet to create."
       }
     },
-    "param_databricksPrivateSubnetCidr": {
+    "databricksPrivateSubnetCidr": {
       "type": "string",
       "defaultValue": "10.1.1.0/24",
       "metadata": {
         "description": "Cidr range for the private subnet."
       }
     },
-    "param_databricksWorkspaceName": {
+    "databricksWorkspaceName": {
       "type": "string",
       "defaultValue": "dbw-PROJECT-ENVIRONMENT-REGION-INSTANCE",
       "metadata": {
         "description": "The name of the Azure Databricks workspace to create."
       }
-    },
-    "param_keyVaultName": {
-      "type": "string",
-      "defaultValue": "kv-PROJECT-ENVIRONMENT-REGION-INSTANCE",
-      "maxLength": 24,
-      "minLength": 3,
-      "metadata": {
-        "description": "The name of the Azure Key Vault to create."
-      }
     }
   },
   "variables": {
-    "var_managedResourceGroupName": "[format('databricks-rg-{0}-{1}', parameters('param_databricksWorkspaceName'), uniqueString(parameters('param_databricksWorkspaceName'), resourceGroup().id))]",
+    "var_managedResourceGroupName": "[format('databricks-rg-{0}-{1}', parameters('databricksWorkspaceName'), uniqueString(parameters('databricksWorkspaceName'), resourceGroup().id))]",
     "var_trimmedMRGName": "[substring(variables('var_managedResourceGroupName'), 0, min(length(variables('var_managedResourceGroupName')), 90))]",
     "var_managedResourceGroupId": "[format('{0}/resourceGroups/{1}', subscription().id, variables('var_trimmedMRGName'))]",
-    "var_databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('param_databricksNsgName'))]",
-    "var_databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks/', parameters('param_databricksVnetName'))]",
-    "var_databricksNatId": "[resourceId('Microsoft.Network/natGateways/', parameters('param_databricksNatGatewayName'))]",
-    "var_databricksNatPipId": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('param_databricksNatGatewayPublicIpName'))]"
+    "var_databricksNsgId": "[resourceId('Microsoft.Network/networkSecurityGroups/', parameters('databricksNsgName'))]",
+    "var_databricksVnetId": "[resourceId('Microsoft.Network/virtualNetworks/', parameters('databricksVnetName'))]",
+    "var_databricksNatId": "[resourceId('Microsoft.Network/natGateways/', parameters('databricksNatGatewayName'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "2022-09-01",
-      "name": "[parameters('param_databricksNatGatewayPublicIpName')]",
-      "location": "[parameters('param_location')]",
+      "name": "[parameters('databricksNatGatewayPublicIpName')]",
+      "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
       },
@@ -142,8 +132,8 @@
     {
       "type": "Microsoft.Network/natGateways",
       "apiVersion": "2022-09-01",
-      "name": "[parameters('param_databricksNatGatewayName')]",
-      "location": "[parameters('param_location')]",
+      "name": "[parameters('databricksNatGatewayName')]",
+      "location": "[parameters('location')]",
       "sku": {
         "name": "Standard"
       },
@@ -151,36 +141,36 @@
         "idleTimeoutInMinutes": 4,
         "publicIpAddresses": [
           {
-            "id": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('param_databricksNatGatewayPublicIpName'))]"
+            "id": "[resourceId('Microsoft.Network/publicIPAddresses/', parameters('databricksNatGatewayPublicIpName'))]"
           }
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('param_databricksNatGatewayPublicIpName'))]"
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('databricksNatGatewayPublicIpName'))]"
       ]
     },
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2022-09-01",
-      "name": "[parameters('param_databricksNsgName')]",
-      "location": "[parameters('param_location')]"
+      "name": "[parameters('databricksNsgName')]",
+      "location": "[parameters('location')]"
     },
     {
       "type": "Microsoft.Network/virtualNetworks",
       "apiVersion": "2022-09-01",
-      "name": "[parameters('param_databricksVnetName')]",
-      "location": "[parameters('param_location')]",
+      "name": "[parameters('databricksVnetName')]",
+      "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[parameters('param_databricksVnetCidr')]"
+            "[parameters('databricksVnetCidr')]"
           ]
         },
         "subnets": [
           {
-            "name": "[parameters('param_databricksPublicSubnetName')]",
+            "name": "[parameters('databricksPublicSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('param_databricksPublicSubnetCidr')]",
+              "addressPrefix": "[parameters('databricksPublicSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[variables('var_databricksNsgId')]"
               },
@@ -212,9 +202,9 @@
             }
           },
           {
-            "name": "[parameters('param_databricksPrivateSubnetName')]",
+            "name": "[parameters('databricksPrivateSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('param_databricksPrivateSubnetCidr')]",
+              "addressPrefix": "[parameters('databricksPrivateSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[variables('var_databricksNsgId')]"
               },
@@ -234,17 +224,17 @@
         ]
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/natGateways', parameters('param_databricksNatGatewayName'))]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('param_databricksNsgName'))]"
+        "[resourceId('Microsoft.Network/natGateways', parameters('databricksNatGatewayName'))]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]"
       ]
     },
     {
       "type": "Microsoft.Databricks/workspaces",
       "apiVersion": "2023-02-01",
-      "name": "[parameters('param_databricksWorkspaceName')]",
-      "location": "[parameters('param_location')]",
+      "name": "[parameters('databricksWorkspaceName')]",
+      "location": "[parameters('location')]",
       "sku": {
-        "name": "[parameters('param_databricksPricingTier')]"
+        "name": "[parameters('databricksPricingTier')]"
       },
       "properties": {
         "managedResourceGroupId": "[variables('var_managedResourceGroupId')]",
@@ -253,10 +243,10 @@
             "value": "[variables('var_databricksVnetId')]"
           },
           "customPublicSubnetName": {
-            "value": "[parameters('param_databricksPublicSubnetName')]"
+            "value": "[parameters('databricksPublicSubnetName')]"
           },
           "customPrivateSubnetName": {
-            "value": "[parameters('param_databricksPrivateSubnetName')]"
+            "value": "[parameters('databricksPrivateSubnetName')]"
           },
           "enableNoPublicIp": {
             "value": true
@@ -264,49 +254,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('param_databricksNsgName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('param_databricksVnetName'))]"
-      ]
-    },
-    {
-      "type": "Microsoft.KeyVault/vaults",
-      "apiVersion": "2022-11-01",
-      "name": "[parameters('param_keyVaultName')]",
-      "location": "[parameters('param_location')]",
-      "properties": {
-        "enabledForDeployment": false,
-        "enabledForDiskEncryption": false,
-        "enabledForTemplateDeployment": false,
-        "enableSoftDelete": true,
-        "softDeleteRetentionInDays": 90,
-        "enablePurgeProtection": true,
-        "enableRbacAuthorization": true,
-        "tenantId": "[subscription().tenantId]",
-        "sku": {
-          "family": "A",
-          "name": "standard"
-        },
-        "networkAcls": {
-          "defaultAction": "Deny",
-          "bypass": "AzureServices",
-          "ipRules": [
-            {
-              "value": "[reference(variables('var_databricksNatPipId')).ipAddress]"
-            }
-          ],
-          "virtualNetworkRules": [
-            {
-              "id": "[format('{0}/subnets/{1}', variables('var_databricksVnetId'), parameters('param_databricksPublicSubnetName'))]",
-              "ignoreMissingVnetServiceEndpoint": false
-            }
-          ]
-        },
-        "publicNetworkAccess": "Enabled"
-      },
-      "dependsOn": [
-        "[resourceId('Microsoft.Databricks/workspaces', parameters('param_databricksWorkspaceName'))]",
-        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('param_databricksNatGatewayPublicIpName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks', parameters('param_databricksVnetName'))]"
+        "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('databricksNsgName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks', parameters('databricksVnetName'))]"
       ]
     }
   ]

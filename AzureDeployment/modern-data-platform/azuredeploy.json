@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.15.31.15270",
-      "templateHash": "7181050426284865680"
+      "templateHash": "13002327194533947992"
     },
     "author": "Qivada",
     "changeHistory": [
@@ -136,6 +136,13 @@
       "minLength": 3,
       "metadata": {
         "description": "The name of the Azure Key Vault to create."
+      }
+    },
+    "keyVaultEnablePurgeProtection": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Enable purge protection on the Azure Key Vault:\r\n- True = Purge protection enabled. Key vault cannot be created again with same name after deletion.\r\n- False = Purge protection disabled. Key vault can be created instantly with same name after deleetion\r\n"
       }
     },
     "dataLakeStorageName": {
@@ -468,7 +475,7 @@
         "enabledForTemplateDeployment": false,
         "enableSoftDelete": true,
         "softDeleteRetentionInDays": 90,
-        "enablePurgeProtection": true,
+        "enablePurgeProtection": "[if(parameters('keyVaultEnablePurgeProtection'), true(), null())]",
         "enableRbacAuthorization": false,
         "tenantId": "[subscription().tenantId]",
         "sku": {
@@ -680,7 +687,7 @@
   "outputs": {
     "powerShell_1": {
       "type": "string",
-      "value": "[format('Select-AzSubscription -SubscriptionId \"{0}\"; Add-AzStorageAccountNetworkRule -ResourceGroupName \"{1}\" -Name \"{2}\" -TenantId \"{3}\" -ResourceId \"{4}\"', subscription().subscriptionId, resourceGroup().name, parameters('dataLakeStorageName'), subscription().tenantId, resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')))]",
+      "value": "[format('Select-AzSubscription -SubscriptionId \"{0}\" && Add-AzStorageAccountNetworkRule -ResourceGroupName \"{1}\" -Name \"{2}\" -TenantId \"{3}\" -ResourceId \"{4}\"', subscription().subscriptionId, resourceGroup().name, parameters('dataLakeStorageName'), subscription().tenantId, resourceId('Microsoft.Synapse/workspaces', parameters('synapseWorkspaceName')))]",
       "metadata": {
         "description": "Powershell command to authorize Synapse Workspace to Data Lake Storage Firewall"
       }
