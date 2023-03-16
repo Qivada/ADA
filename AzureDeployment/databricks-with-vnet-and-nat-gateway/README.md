@@ -18,17 +18,13 @@ graph TB
     SNET_PRIVATE --- NAT
     
     DATABRICKS[Azure Databricks]
-    KEYVAULT[Azure Key Vault]
     
     DATABRICKS --- SNET_PUBLIC
-    DATABRICKS --- SNET_PRIVATE
-    
-    SNET_PUBLIC -- Firewall Rule --- KEYVAULT
-    NAT_PUBLIC_IP -- Firewall Rule --- KEYVAULT    
+    DATABRICKS --- SNET_PRIVATE   
 ~~~
 
 ## Required Manual Steps After Template Deployment
-1. Configure Azure Key Vault connection into Databricks
+1. Configure Azure Key Vault connection into Databricks (if Azure Key Vault is used to store secrets)
    - Use scope name 'KeyVault' to support default configuration.
    - Configuration dialog is on location: https://**[workspace unique id]**.azuredatabricks.net/#secrets/createScope
 2. Create cluster with following configuration:
