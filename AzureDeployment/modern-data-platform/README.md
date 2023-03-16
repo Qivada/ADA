@@ -2,6 +2,9 @@
 
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2FQivada%2FADA%2Fmain%2FAzureDeployment%2Fmodern-data-platform%2Fazuredeploy.json)
 
+## Pre-deployment
+1. Register application for Azure Databricks. See instructions [here](https://github.com/Qivada/ADA/tree/main/AzureDeployment/register-app)
+
 ## Template Deployment
 ~~~mermaid
 graph TB
