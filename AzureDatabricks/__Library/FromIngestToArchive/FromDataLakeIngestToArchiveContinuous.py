@@ -118,6 +118,7 @@ def archiveFile(file, archivePath):
       'OriginalStagingFilePath': file.path,
       'OriginalStagingFileName': file.name,
       'OriginalStagingFileSize': file.size,
+      'OriginalModificationTime': datetime.utcfromtimestamp(file.modificationTime / 1000),
       'ArchiveFilePath': archiveFilePath,
       'ArchiveFileName': archiveFileName
     })
@@ -188,6 +189,7 @@ while True:
                                      "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
                                      "CAST(OriginalStagingFileName AS string) AS OriginalStagingFileName", \
                                      "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
+                                     "CAST(OriginalModificationTime AS timestamp) AS OriginalModificationTime", \
                                      "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                      "CAST(ArchiveFileName AS string) AS ArchiveFileName", \
                                      "CAST(0 AS boolean) AS IsPurged", \
