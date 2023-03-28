@@ -60,6 +60,10 @@ __BLOB_STORAGE_ACCOUNT = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SEC
 __BLOB_STORAGE_KEY = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_BLOB_ACCOUNT_KEY)
 spark.conf.set("fs.azure.account.key." + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net", __BLOB_STORAGE_KEY)
 
+# In case SAS is used instead of KEY
+#__BLOB_STORAGE_SAS = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "blob-account-sas")
+#spark.conf.set("fs.azure.sas." + __CONTAINER + "." + __BLOB_STORAGE_ACCOUNT + ".blob.core.windows.net", __BLOB_STORAGE_SAS)
+
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
 # To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
@@ -106,6 +110,7 @@ def archiveFile(file, archivePath):
       'OriginalStagingFilePath': file.path,
       'OriginalStagingFileName': file.name,
       'OriginalStagingFileSize': file.size,
+      'OriginalModificationTime': datetime.utcfromtimestamp(file.modificationTime / 1000),
       'ArchiveFilePath': archiveFilePath,
       'ArchiveFileName': archiveFileName
     })
@@ -132,6 +137,7 @@ if archiveLogs:
                                    "CAST(OriginalStagingFilePath AS string) AS OriginalStagingFilePath", \
                                    "CAST(OriginalStagingFileName AS string) AS OriginalStagingFileName", \
                                    "CAST(OriginalStagingFileSize AS long) AS OriginalStagingFileSize", \
+                                   "CAST(OriginalModificationTime AS timestamp) AS OriginalModificationTime", \
                                    "CAST(ArchiveFilePath AS string) AS ArchiveFilePath", \
                                    "CAST(ArchiveFileName AS string) AS ArchiveFileName", \
                                    "CAST(0 AS boolean) AS IsPurged", \
