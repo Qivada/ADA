@@ -111,12 +111,21 @@ except Exception as ex:
 # COMMAND ----------
 
 # Get archive log records where ArchiveDatetimeUTC is greater than lastArchiveDatetimeUTC
-dfArchiveLogs = spark.sql(" \
-  SELECT * \
-  FROM   delta.`" + __ARCHIVE_LOG_PATH + "` \
-  WHERE  ArchiveDatetimeUTC " + (__INCLUDE_PREVIOUS == "True" and ">=" or ">") + " CAST('" + str(lastArchiveDatetimeUTC) + "' AS timestamp) AND `IsPurged` = 0 AND `IsIgnorable` = 0 \
-  ORDER BY ArchiveDatetimeUTC ASC \
-")
+try:
+    dfArchiveLogs = spark.sql(" \
+      SELECT * \
+      FROM   delta.`" + __ARCHIVE_LOG_PATH + "` \
+      WHERE  ArchiveDatetimeUTC " + (__INCLUDE_PREVIOUS == "True" and ">=" or ">") + " CAST('" + str(lastArchiveDatetimeUTC) + "' AS timestamp) AND `IsPurged` = 0 AND `IsIgnorable` = 0 \
+      ORDER BY ArchiveDatetimeUTC ASC, OriginalModificationTime ASC \
+    ")
+except:
+    # Failsafe without OriginalModificationTime that was included later on to archive log
+    dfArchiveLogs = spark.sql(" \
+      SELECT * \
+      FROM   delta.`" + __ARCHIVE_LOG_PATH + "` \
+      WHERE  ArchiveDatetimeUTC " + (__INCLUDE_PREVIOUS == "True" and ">=" or ">") + " CAST('" + str(lastArchiveDatetimeUTC) + "' AS timestamp) AND `IsPurged` = 0 AND `IsIgnorable` = 0 \
+      ORDER BY ArchiveDatetimeUTC ASC \
+    ")
 
 __EXTRACT_COLUMNS = __EXTRACT_COLUMNS.replace('[','`').replace(']','`')
 __TABLE_NAME = __TABLE_NAME.replace('[','').replace(']','')
