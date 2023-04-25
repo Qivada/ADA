@@ -1,8 +1,8 @@
 # Register Application
 
 1. Open [Register an application](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/CreateApplicationBlade/quickStartType~/null/isMSAApp~/false) dialog (Azure Actice Directory > App registrations > New registration)
-   - Name. Use naming standard e.g. app-PROJECT-USAGE-ENVIRONMENT
-   - Supported account types. Select 'Accounts in this organizational directory only (Qivada only - Single tenant)'
+   - Name. It is recommended to use naming standard e.g. app-PROJECT-USAGE-ENVIRONMENT
+   - Supported account types. Select 'Accounts in this organizational directory only (??? only - Single tenant)'
    - Leave rest with default values and select 'Register'
    ![image](https://user-images.githubusercontent.com/109618668/225613213-04707967-7557-4bb9-ba8b-cdfdf42868fd.png)
 
