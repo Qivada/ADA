@@ -13,6 +13,6 @@
      - Enable and allow access to the registered application (service principal)
      - Notice that the application (service principal) must be included into security group beforehand if authorization is not done on organization level for all service principals
 3. Navigate to Power BI workspace
-   - Authorize the registered application (service principal) with "Admin" access. Alternatively authorize security group that contains the application with "Admin" access.
+   - Authorize the registered application (service principal) with "Contributor" access. Alternatively authorize security group that contains the application with "Contributor" access.
 4. The registered application (service principal) can now refresh datasets on the authorized workspace
    - Notice that authorization might take 30 minutes or more to be effective on Power BI API calls
