@@ -2,7 +2,7 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Archive files from data lake's ingest area
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
 
@@ -44,7 +44,7 @@ __SECRET_NAME_DATA_LAKE_APP_CLIENT_TENANT_ID = "App-databricks-tenant-id"
 __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Name")
 
 __ARCHIVE_TARGET_DATABASE = "Qivada_ADA"
-__ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_")
+__ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_").replace("-", "_")
 __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
 
 __INGEST_PATH = "abfss://ingest@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __INGEST_PATH
