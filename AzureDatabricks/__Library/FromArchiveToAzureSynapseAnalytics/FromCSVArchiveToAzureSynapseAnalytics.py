@@ -2,10 +2,10 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Stage csv files from archive to Azure Synapse Analytics
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
-# MAGIC 
+# MAGIC
 # MAGIC Other requirements:
 # MAGIC - Write semantics "Copy" requires Azure Databricks >= 7.0
 
@@ -106,9 +106,9 @@ spark.conf.set("spark.databricks.sqldw.writeSemantics", "copy")
 
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
-# To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
+# To restore the behavior before Spark 3.1, you can set spark.sql.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
+spark.conf.set("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+spark.conf.set("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
 
 # Azure Synapse Analytics authentication
 __SYNAPSE_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SYNAPSE_JDBC_CONNECTION_STRING)
