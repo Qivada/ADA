@@ -75,7 +75,7 @@ try:
     try:
         __PARTITION_BY_COLUMNS = dbutils.widgets.get("PARTITION_BY_COLUMNS")
     except:
-    print('No partition by columns')  
+        print('No partition by columns')  
     
     # Include previous. Use "True" or "False"
     # True = ArchiveDatetimeUTC >= lastArchiveDatetimeUTC
@@ -84,7 +84,7 @@ try:
     try:
         __INCLUDE_PREVIOUS = dbutils.widgets.get("INCLUDE_PREVIOUS")
     except:
-            print("Using default include previous: " + __INCLUDE_PREVIOUS)
+        print("Using default include previous: " + __INCLUDE_PREVIOUS)
     
 except:
     raise Exception("Required parameter(s) missing")
@@ -116,6 +116,8 @@ __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
 __TARGET_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_PATH
 __TARGET_LOG_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_LOG_PATH + "/processDatetime/"
+
+__TARGET__TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
 
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
@@ -266,9 +268,9 @@ for archiveLog in dfStaticArchiveLogs:
     
     dfSource = dfSource.withColumn("__HashDiff", sha2(concat_ws("||", *dfSource.columns), 256))
 
-    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
-        print("Initial table creation")
-        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    if (__TARGET__TABLE_FULLY_QUALIEFIED_NAME in ['`' + __TARGET_DATABASE + '`.`' + t.name + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
+        print("Initial table creation")        
     
         if __PARTITION_BY_COLUMNS is None:
             dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \

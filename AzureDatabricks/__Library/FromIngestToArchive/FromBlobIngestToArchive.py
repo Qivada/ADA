@@ -185,9 +185,9 @@ if archiveLogs:
 # COMMAND ----------
 
 #  Create archive log table metadata
+spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
 if (__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME in ['`' + __ARCHIVE_TARGET_DATABASE + '`.`' + t.name + '`' for t in spark.catalog.listTables(__ARCHIVE_TARGET_DATABASE)]) == False:
-    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)
-    spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
+    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)    
     spark.sql("""
       CREATE TABLE """ + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME + """
       USING DELTA

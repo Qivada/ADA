@@ -2,7 +2,7 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Populate databricks database table with fact logic from archive CSV files.
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
 
@@ -105,6 +105,8 @@ __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
 __TARGET_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_PATH
 __TARGET_LOG_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_LOG_PATH + "/processDatetime/"
+
+__TARGET__TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
 
 # Delta optimization
 # https://docs.databricks.com/delta/optimizations/auto-optimize.html#how-auto-optimize-works
@@ -281,9 +283,9 @@ for archiveLog in dfStaticArchiveLogs:
     renamed_column_list = list(map(lambda x: x.replace(" ", "_"), dfSource.columns))
     dfSource = dfSource.toDF(*renamed_column_list)
   
-    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
+    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    if (__TARGET__TABLE_FULLY_QUALIEFIED_NAME in ['`' + __TARGET_DATABASE + '`.`' + t.name + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
         print("Initial table creation")
-        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
     
         if __PARTITION_BY_COLUMNS is None:
             # Initial table creation without partition
