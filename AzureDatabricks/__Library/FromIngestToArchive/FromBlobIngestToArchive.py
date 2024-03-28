@@ -50,7 +50,7 @@ __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Na
 
 __ARCHIVE_TARGET_DATABASE = "Qivada_ADA"
 __ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_")
-__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
+__ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
 
 __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
@@ -186,10 +186,10 @@ if archiveLogs:
 
 #  Create archive log table metadata
 spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
-if (__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __ARCHIVE_TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__ARCHIVE_TARGET_DATABASE)]) == False:
-    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)    
+if (__ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __ARCHIVE_TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__ARCHIVE_TARGET_DATABASE)]) == False:
+    print("Create archive log table: " + __ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME)    
     spark.sql("""
-      CREATE TABLE """ + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME + """
+      CREATE TABLE """ + __ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME + """
       USING DELTA
       LOCATION '""" + __ARCHIVE_LOG_PATH + """'
      """)

@@ -106,7 +106,7 @@ __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.
 __TARGET_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_PATH
 __TARGET_LOG_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_LOG_PATH + "/processDatetime/"
 
-__TARGET__TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
+__TARGET_TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
 
 # Delta optimization
 # https://docs.databricks.com/delta/optimizations/auto-optimize.html#how-auto-optimize-works
@@ -284,7 +284,7 @@ for archiveLog in dfStaticArchiveLogs:
     dfSource = dfSource.toDF(*renamed_column_list)
   
     spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
-    if (__TARGET__TABLE_FULLY_QUALIEFIED_NAME in ['`' + __TARGET_DATABASE + '`.`' + t.name + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
+    if (__TARGET_TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
         print("Initial table creation")
     
         if __PARTITION_BY_COLUMNS is None:
