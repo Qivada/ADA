@@ -56,7 +56,7 @@ except:
 # Import
 import sys
 from pyspark.sql.utils import AnalysisException
-from pyspark.sql.functions import lit
+from pyspark.sql.functions import lit, max
 from datetime import datetime, timedelta
 
 # Configuration
@@ -91,13 +91,13 @@ __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL
 lastProcessDatetimeUTC = None
 try:
     dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
-    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
+    lastProcessDatetimeUTC = dfProcessDatetimes.select(max(dfProcessDatetimes.ProcessDatetime)).collect()[0][0] - timedelta(days = int(__DELTA_DAY_COUNT))
     print("Using existing log with date: " + str(lastProcessDatetimeUTC))
 except AnalysisException as ex:
     # Initiliaze delta as it did not exist
     dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
     dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
+    lastProcessDatetimeUTC = dfProcessDatetimes.select(max(dfProcessDatetimes.ProcessDatetime)).collect()[0][0]
     print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
 except Exception as ex:
     print("Could not read log")
@@ -117,7 +117,7 @@ maxDatetimeUTC = spark.sql("""
   SELECT MAX(`""" + __SOURCE_TRACK_DATE_COLUMN + """`) AS `maxDatetimeUTC` 
   FROM   """ + __SOURCE_DATABASE  + """.""" + __SOURCE_TABLE + """ 
   WHERE `""" + __SOURCE_TRACK_DATE_COLUMN + """` >= CAST('""" + str(lastProcessDatetimeUTC) + """' AS timestamp) AND
-        `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").rdd.max()[0]
+        `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").collect()[0][0]
 
 if maxDatetimeUTC:
     # Save max. archive datetime to target process datetime log
