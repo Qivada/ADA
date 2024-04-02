@@ -358,7 +358,6 @@ for archiveLog in dfStaticArchiveLogs:
                           """ + getMatchCondition(__TARGET_TABLE_BK_COLUMNS, "Match business keys", "t", "d") + """
                  )
           """
-        print(setDeletedDatetimeUtcSql)
         spark.sql(setDeletedDatetimeUtcSql)
     else:
         setDeletedDatetimeUtcSqlWithFilter = """
