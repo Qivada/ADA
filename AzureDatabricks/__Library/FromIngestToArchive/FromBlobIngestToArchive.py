@@ -2,7 +2,7 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Archive files from blob storage
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
 
@@ -50,7 +50,7 @@ __DATA_LAKE_NAME = dbutils.secrets.get(scope = __SECRET_SCOPE, key = "Storage-Na
 
 __ARCHIVE_TARGET_DATABASE = "Qivada_ADA"
 __ARCHIVE_TARGET_TABLE = "archive_" + __ARCHIVE_PATH.replace("/", "_").replace("\\", "_")
-__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
+__ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME = "`" + __ARCHIVE_TARGET_DATABASE + "`.`" + __ARCHIVE_TARGET_TABLE + "`"
 
 __ARCHIVE_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __ARCHIVE_LOG_PATH
@@ -66,9 +66,9 @@ spark.conf.set("fs.azure.account.key." + __BLOB_STORAGE_ACCOUNT + ".blob.core.wi
 
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
-# To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
+# To restore the behavior before Spark 3.1, you can set spark.sql.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
+spark.conf.set("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+spark.conf.set("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
 
 # Data lake authentication
 spark.conf.set("fs.azure.account.auth.type." + __DATA_LAKE_NAME + ".dfs.core.windows.net", "OAuth")
@@ -185,11 +185,11 @@ if archiveLogs:
 # COMMAND ----------
 
 #  Create archive log table metadata
-if spark.catalog._jcatalog.tableExists(__ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME) == False:
-    print("Create archive log table: " + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME)
-    spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
+spark.sql("CREATE DATABASE IF NOT EXISTS `" + __ARCHIVE_TARGET_DATABASE + "`")
+if (__ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __ARCHIVE_TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__ARCHIVE_TARGET_DATABASE)]) == False:
+    print("Create archive log table: " + __ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME)    
     spark.sql("""
-      CREATE TABLE """ + __ARCHIVE__TABLE_FULLY_QUALIEFIED_NAME + """
+      CREATE TABLE """ + __ARCHIVE_TABLE_FULLY_QUALIEFIED_NAME + """
       USING DELTA
       LOCATION '""" + __ARCHIVE_LOG_PATH + """'
      """)

@@ -2,7 +2,7 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Populate databricks database table with fact logic from archive JSON files.
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
 
@@ -112,6 +112,8 @@ __ARCHIVE_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_PATH
 __ARCHIVE_LOG_PATH = __DATA_LAKE_URL + "/" + __ARCHIVE_LOG_PATH
 __TARGET_PATH = __DATA_LAKE_URL + "/" + __TARGET_PATH
 __TARGET_LOG_PATH = __DATA_LAKE_URL + "/" + __TARGET_LOG_PATH + "/processDatetime/"
+
+__TARGET_TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
 
 # Delta optimization
 # https://docs.databricks.com/delta/optimizations/auto-optimize.html#how-auto-optimize-works
@@ -304,9 +306,9 @@ for archiveLog in dfStaticArchiveLogs:
     dfSource = dfSource.drop(col("__tempStringForHashDiff"))
     datetimeUtcNow = datetime.utcnow()
   
-    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
+    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    if (__TARGET_TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
         print("Initial table creation")
-        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)    
     
         if __PARTITION_BY_COLUMNS is None:
             # Initial table creation without partition

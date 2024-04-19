@@ -2,7 +2,7 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Stage table data from Databricks to Azure SQL DB
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
 
@@ -56,7 +56,7 @@ except:
 # Import
 import sys
 from pyspark.sql.utils import AnalysisException
-from pyspark.sql.functions import lit
+from pyspark.sql.functions import lit, max
 from datetime import datetime, timedelta
 
 # Configuration
@@ -78,9 +78,9 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
-# To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
+# To restore the behavior before Spark 3.1, you can set spark.sql.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
+spark.conf.set("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+spark.conf.set("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
 
 # Azure SQL authentication
 __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL_JDBC_CONNECTION_STRING)
@@ -91,13 +91,13 @@ __SQL_JDBC = dbutils.secrets.get(scope = __SECRET_SCOPE, key = __SECRET_NAME_SQL
 lastProcessDatetimeUTC = None
 try:
     dfProcessDatetimes = spark.read.format("delta").load(__TARGET_LOG_PATH)
-    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0] - timedelta(days = int(__DELTA_DAY_COUNT))
+    lastProcessDatetimeUTC = dfProcessDatetimes.select(max(dfProcessDatetimes.ProcessDatetime)).collect()[0][0] - timedelta(days = int(__DELTA_DAY_COUNT))
     print("Using existing log with date: " + str(lastProcessDatetimeUTC))
 except AnalysisException as ex:
     # Initiliaze delta as it did not exist
     dfProcessDatetimes = spark.sql("SELECT CAST('1900-01-01' AS timestamp) AS ProcessDatetime")
     dfProcessDatetimes.write.format("delta").mode("append").option("mergeSchema", "true").save(__TARGET_LOG_PATH)
-    lastProcessDatetimeUTC = dfProcessDatetimes.select("ProcessDatetime").rdd.max()[0]
+    lastProcessDatetimeUTC = dfProcessDatetimes.select(max(dfProcessDatetimes.ProcessDatetime)).collect()[0][0]
     print("Initiliazed log with date: " + str(lastProcessDatetimeUTC))
 except Exception as ex:
     print("Could not read log")
@@ -117,7 +117,7 @@ maxDatetimeUTC = spark.sql("""
   SELECT MAX(`""" + __SOURCE_TRACK_DATE_COLUMN + """`) AS `maxDatetimeUTC` 
   FROM   """ + __SOURCE_DATABASE  + """.""" + __SOURCE_TABLE + """ 
   WHERE `""" + __SOURCE_TRACK_DATE_COLUMN + """` >= CAST('""" + str(lastProcessDatetimeUTC) + """' AS timestamp) AND
-        `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").rdd.max()[0]
+        `""" + __SOURCE_TRACK_DATE_COLUMN + """` <= CAST('""" + str(queryBeginsDatetimeUTC) + """' AS timestamp)""").collect()[0][0]
 
 if maxDatetimeUTC:
     # Save max. archive datetime to target process datetime log

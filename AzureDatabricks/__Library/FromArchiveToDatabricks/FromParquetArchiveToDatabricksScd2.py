@@ -2,10 +2,10 @@
 # DBTITLE 1,Information
 # MAGIC %md
 # MAGIC Populate databricks database table with slowly changing dimension type 2 logic from archive parquet files.
-# MAGIC 
+# MAGIC
 # MAGIC Required additional libraries:
 # MAGIC - None
-# MAGIC 
+# MAGIC
 # MAGIC Example call:
 # MAGIC ```
 # MAGIC returnFlag = dbutils.notebook.run(
@@ -124,11 +124,13 @@ __ARCHIVE_LOG_PATH = "abfss://archive@" + __DATA_LAKE_NAME + ".dfs.core.windows.
 __TARGET_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_PATH
 __TARGET_LOG_PATH = "abfss://datahub@" + __DATA_LAKE_NAME + ".dfs.core.windows.net/" + __TARGET_LOG_PATH + "/processDatetime/"
 
+__TARGET_TABLE_FULLY_QUALIEFIED_NAME = "`" + __TARGET_DATABASE + "`.`" + __TARGET_TABLE + "`"
+
 # In Spark 3.1, loading and saving of timestamps from/to parquet files fails if the timestamps are before 1900-01-01 00:00:00Z, and loaded (saved) as the INT96 type. 
 # In Spark 3.0, the actions don’t fail but might lead to shifting of the input timestamps due to rebasing from/to Julian to/from Proleptic Gregorian calendar. 
-# To restore the behavior before Spark 3.1, you can set spark.sql.legacy.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInWrite", "LEGACY")
-spark.conf.set("spark.sql.legacy.parquet.int96RebaseModeInRead", "LEGACY")
+# To restore the behavior before Spark 3.1, you can set spark.sql.parquet.int96RebaseModeInRead or/and spark.sql.legacy.parquet.int96RebaseModeInWrite to LEGACY.
+spark.conf.set("spark.sql.parquet.int96RebaseModeInWrite", "LEGACY")
+spark.conf.set("spark.sql.parquet.int96RebaseModeInRead", "LEGACY")
 
 # Data lake authentication
 spark.conf.set("fs.azure.account.auth.type." + __DATA_LAKE_NAME + ".dfs.core.windows.net", "OAuth")
@@ -274,9 +276,9 @@ for archiveLog in dfStaticArchiveLogs:
     
     dfSource = dfSource.withColumn("__HashDiff", sha2(concat_ws("||", *dfSource.columns), 256))
 
-    if spark.catalog._jcatalog.tableExists(__TARGET_DATABASE + "." + __TARGET_TABLE) == False:
+    spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
+    if (__TARGET_TABLE_FULLY_QUALIEFIED_NAME.lower() in ['`' + __TARGET_DATABASE.lower() + '`.`' + t.name.lower() + '`' for t in spark.catalog.listTables(__TARGET_DATABASE)]) == False:
         print("Initial table creation")
-        spark.sql("CREATE DATABASE IF NOT EXISTS " + __TARGET_DATABASE)
 
         if __PARTITION_BY_COLUMNS is None:
             dfSource.withColumn('__ModifiedDatetimeUTC', lit(datetime.utcnow())) \
