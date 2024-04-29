@@ -1,0 +1,56 @@
+{
+  "properties": {
+    "displayName": "Allowed dedicated SQL pool capacities",
+    "policyType": "Custom",
+    "mode": "All",
+    "description": "This policy enables you to restrict the dedicated SQL pool capacities your organization can specify when deploying resources. Use to enforce your allowed dedicated SQL pool capacities.",
+    "version": "1.0.0",
+    "parameters": {
+      "listOfAllowedSkus": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Allowed SKUs",
+          "description": "The list of allowed SQL pool SKUs."
+        },
+        "allowedValues": [
+          "DW100c",
+          "DW200c",
+          "DW300c",
+          "DW400c",
+          "DW500c",
+          "DW1000c",
+          "DW1500c",
+          "DW2000c",
+          "DW2500c",
+          "DW3000c",
+          "DW5000c",
+          "DW6000c",
+          "DW7500c",
+          "DW10000c",
+          "DW15000c",
+          "DW30000c"
+        ]
+      }
+    },
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Synapse/workspaces/sqlPools"
+          },
+          {
+            "field": "Microsoft.Synapse/workspaces/sqlPools/sku.name",
+            "notIn": "[parameters('listOfAllowedSkus')]"
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "versions": [
+      "1.0.0"
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "if": {
+	"allOf": [
+	  {
+		"field": "type",
+		"equals": "Microsoft.Synapse/workspaces/sqlPools"
+	  },
+	  {
+		"field": "Microsoft.Synapse/workspaces/sqlPools/sku.name",
+		"notIn": "[parameters('listOfAllowedSkus')]"
+	  }
+	]
+  },
+  "then": {
+	"effect": "deny"
+  }
+}
