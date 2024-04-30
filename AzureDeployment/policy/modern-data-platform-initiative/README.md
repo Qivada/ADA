@@ -5,7 +5,7 @@ Collection of policies related to modern data platform
 ## Deploy with PowerShell
 
 ````powershell
-$subscriptionId = "<Enter Azure Subscription ID>"
+$subscriptionId = Read-Host -Prompt "Enter Azure subscription ID where to deploy initiative definition"
 Select-AzSubscription -SubscriptionId $subscriptionId
 
 $policydefinitions = "https://raw.githubusercontent.com/Qivada/ADA/main/AzureDeployment/policy/modern-data-platform-initiative/azurepolicyset.definitions.json"
