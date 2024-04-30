@@ -3,6 +3,7 @@
    	"properties": {
 	        "displayName": "Modern data platform policies initiative",
 	        "description": "Collection of policies related to modern data platform",
+		"enforcementMode": "DoNotEnforce",
 	        "policyDefinitions": [
 	            {
 	                "policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/13502221-8df0-4414-9937-de9c5c4e396b",
