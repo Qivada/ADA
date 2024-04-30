@@ -1,6 +1,7 @@
 # Modern Data Platform Policy Initiative
 
 Collection of policies related to modern data platform:
+- [Preview]: Storage account public access should be disallowed
 - Auditing on Synapse workspace should be enabled
 - Azure Data Factory should use a Git repository for source control
 - Azure Databricks Clusters should disable public IP
