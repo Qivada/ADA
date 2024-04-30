@@ -1,7 +1,7 @@
 # Modern Data Platform Policy Initiative
 
 > [!IMPORTANT]
-> It is highly recommend that Microsoft Defender for Cloud is configured for the subscription and workloads related to modern data platform. Azure policies alone are not sufficient to monitor, track and alert of possible configuration -or security issues.
+> It is highly recommend that [Microsoft Defender for Cloud](https://portal.azure.com/#blade/Microsoft_Azure_Security/SecurityMenuBlade) is configured for the subscription and workloads related to modern data platform. Azure policies alone are not sufficient to monitor, track and alert of possible configuration -or security issues.
 
 
 Collection of policies related to modern data platform:
