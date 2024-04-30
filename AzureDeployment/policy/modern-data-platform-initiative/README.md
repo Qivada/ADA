@@ -1,5 +1,9 @@
 # Modern Data Platform Policy Initiative
 
+> [!IMPORTANT]
+> It is highly recommend that Microsoft Defender for Cloud is configured for the subscription and workloads related to modern data platform. Azure policies alone are not sufficient to monitor, track and alert of possible configuration -or security issues.
+
+
 Collection of policies related to modern data platform:
 - [Preview]: Storage account public access should be disallowed
 - Auditing on Synapse workspace should be enabled
@@ -27,7 +31,3 @@ $policyset = New-AzPolicySetDefinition -Name "modern-data-platform-initiative" -
 
 New-AzPolicyAssignment -PolicySetDefinition $policyset -Name $assignmentName -Scope $policyScope
 ````
-
-## Notice
-
-It is highly recommend that Microsoft Defender for Cloud is configured for the subscription and workloads related to modern data platform. Azure policies alone are not sufficient to monitor, track and alert of possible configuration -or security issues.
