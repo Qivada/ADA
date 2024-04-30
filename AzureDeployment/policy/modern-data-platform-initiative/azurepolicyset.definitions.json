@@ -22,5 +22,11 @@
 	},
 	{
 		"policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/77d40665-3120-4348-b539-3192ec808307",
+	},
+	{
+		"policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/8c6a50c6-9ffd-4ae7-986f-5fa6111f9a54",
+	},
+	{
+		"policyDefinitionId": "/providers/Microsoft.Authorization/policyDefinitions/404c3081-a854-4457-ae30-26a93ef643f9",
 	}
 ]
