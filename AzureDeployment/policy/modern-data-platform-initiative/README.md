@@ -1,4 +1,4 @@
-# Modern Data Platform Initiative
+# Modern Data Platform Policy Initiative
 
 Collection of policies related to modern data platform
 
