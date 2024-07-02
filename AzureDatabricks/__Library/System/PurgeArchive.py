@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import uuid
+import time
 
 # Configuration
 __SECRET_SCOPE = "KeyVault"
@@ -20,14 +21,20 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 
 # Purge filter
 tableNameStartsWith = []
-tableNameStartsWith.append('archive_adventureworkslt_')
+tableNameStartsWith.append('archive_')
 
-purgeOlderThanNDays = 7
+purgeOlderThanNDays = 31
 startPurgeFromTime = datetime.today() - timedelta(days=purgeOlderThanNDays)
 keepLastOfAnyYear: bool = True
 keepLastOfAnyMonth: bool = True
 keepLastOfAnyWeek: bool = True
 keepLastOfAnyDay: bool = True
+
+totalBytesToPurge = 0
+totalBytesToRetain = 0
+totalBytesPurged = 0
+
+isDryRun: bool = True
 
 # COMMAND ----------
 
@@ -56,6 +63,11 @@ def convert_size_bytes(size_bytes):
 # COMMAND ----------
 
 def purgeFromArchiveTable(fullyQualifiedName):
+    global totalBytesToPurge
+    global totalBytesToRetain
+    global totalBytesPurged 
+    global isDryRun
+
     print('Purge from archive table: {table}'.format(table = fullyQualifiedName))
 
     dfArchiveRecordsToPurge = spark.sql("""
@@ -97,14 +109,22 @@ def purgeFromArchiveTable(fullyQualifiedName):
                keepLastOfAnyDay = (1 if keepLastOfAnyDay == True else 0)))
 
     bytesToPurge = dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == true").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
+    if bytesToPurge:
+        totalBytesToPurge = totalBytesToPurge + bytesToPurge
+
     bytesToRetain = dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == false").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
+    if bytesToRetain:
+        totalBytesToRetain = totalBytesToRetain + bytesToRetain
+
     bytesPurged = dfArchiveRecordsToPurge.filter("IsPurged == true").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
+    if bytesPurged:
+        totalBytesPurged = totalBytesPurged + bytesPurged
 
-    print('> Data to purge: {size}'.format(size = convert_size_bytes(bytesToPurge)))
-    print('> Data to retain: {size}'.format(size = convert_size_bytes(bytesToRetain)))
-    print('> Data already purged: {size}'.format(size = convert_size_bytes(bytesPurged)))
+    print('> Bytes to purge: {size}'.format(size = convert_size_bytes(bytesToPurge)))
+    print('> Bytes to retain: {size}'.format(size = convert_size_bytes(bytesToRetain)))
+    print('> Bytes already purged: {size}'.format(size = convert_size_bytes(bytesPurged)))
 
-    if True:
+    if not isDryRun:   
         purgedArchiveLogEntries = None
         for archiveRecordToPurge in dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == true").collect():
             try:            
@@ -151,8 +171,31 @@ print('> Year: {case}'.format(case = keepLastOfAnyYear))
 print('  > Month: {case}'.format(case = keepLastOfAnyMonth))
 print('    > Week: {case}'.format(case = keepLastOfAnyWeek))
 print('      > Day: {case}'.format(case = keepLastOfAnyDay))
+print('Archive filter:')
+for tableNameFilter in tableNameStartsWith:
+    print('> {name}'.format(name = tableNameFilter))
+
+if not isDryRun:
+    print('')
+    print('WARNING! Purge operation is configured as active. Waiting 30 seconds before continuing')
+    print('> Interrupt notebook now if you wish to abort the purge operation', end='')
+    for second in reversed(range(30)):
+        char = (' ' + str(second)) if second <= 10 else '.'
+        print(char, end='')
+        time.sleep(1)
+    print('')
+else:
+    print('')
+    print('NOTE! Purge operation is configured as dry run. Archive purge will not happen')
 
 dfTables = spark.sql('SHOW tables from `{archive_database}`'.format(archive_database = __ARCHIVE_TARGET_DATABASE))
 for table in dfTables.collect():
     if any(table.tableName.startswith(tableFilter) for tableFilter in tableNameStartsWith):
         purgeFromArchiveTable("`{database}`.`{table}`".format(database = table.database, table = table.tableName))
+
+
+print('')
+print('Archive purge summary: ')
+print('> Total bytes to purge: {size}'.format(size = convert_size_bytes(totalBytesToPurge)))
+print('> Total bytes to retain: {size}'.format(size = convert_size_bytes(totalBytesToRetain)))
+print('> Total bytes already purged: {size}'.format(size = convert_size_bytes(totalBytesPurged)))
