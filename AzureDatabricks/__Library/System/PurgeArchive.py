@@ -23,6 +23,9 @@ spark.conf.set("fs.azure.account.oauth2.client.endpoint." + __DATA_LAKE_NAME + "
 tableNameStartsWith = []
 tableNameStartsWith.append('archive_')
 
+ignoreTableNameStartsWith = []
+ignoreTableNameStartsWith.append('archive_adventureworkslt_address')
+
 purgeOlderThanNDays = 31
 startPurgeFromTime = datetime.today() - timedelta(days=purgeOlderThanNDays)
 keepLastOfAnyYear: bool = True
@@ -171,9 +174,13 @@ print('> Year: {case}'.format(case = keepLastOfAnyYear))
 print('  > Month: {case}'.format(case = keepLastOfAnyMonth))
 print('    > Week: {case}'.format(case = keepLastOfAnyWeek))
 print('      > Day: {case}'.format(case = keepLastOfAnyDay))
-print('Archive filter:')
+print('')
+print('Archive inclusion filter:')
 for tableNameFilter in tableNameStartsWith:
     print('> {name}'.format(name = tableNameFilter))
+print('Archive exclusion filter:')
+for ignoreTableNameFilter in ignoreTableNameStartsWith:
+    print('> {name}'.format(name = ignoreTableNameFilter))    
 
 if not isDryRun:
     print('')
@@ -187,10 +194,12 @@ if not isDryRun:
 else:
     print('')
     print('NOTE! Purge operation is configured as dry run. Archive purge will not happen')
+    print('')
 
 dfTables = spark.sql('SHOW tables from `{archive_database}`'.format(archive_database = __ARCHIVE_TARGET_DATABASE))
 for table in dfTables.collect():
-    if any(table.tableName.startswith(tableFilter) for tableFilter in tableNameStartsWith):
+    if any(table.tableName.startswith(tableFilter) for tableFilter in tableNameStartsWith) and not \
+       any(table.tableName.startswith(tableFilter) for tableFilter in ignoreTableNameStartsWith):        
         purgeFromArchiveTable("`{database}`.`{table}`".format(database = table.database, table = table.tableName))
 
 
