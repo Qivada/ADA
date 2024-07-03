@@ -71,6 +71,10 @@ def purgeFromArchiveTable(fullyQualifiedName):
     global totalBytesPurged 
     global isDryRun
 
+    bytesToPurge = 0
+    bytesToRetain = 0
+    bytesPurged = 0
+
     print('Purge from archive table: {table}'.format(table = fullyQualifiedName))
 
     dfArchiveRecordsToPurge = spark.sql("""
@@ -111,17 +115,19 @@ def purgeFromArchiveTable(fullyQualifiedName):
                keepLastOfAnyWeek = (1 if keepLastOfAnyWeek == True else 0), \
                keepLastOfAnyDay = (1 if keepLastOfAnyDay == True else 0)))
 
-    bytesToPurge = dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == true").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
-    if bytesToPurge:
-        totalBytesToPurge = totalBytesToPurge + bytesToPurge
+    dfArchiveRecordsToPurgeCollected = dfArchiveRecordsToPurge.collect()
+    for archiveRecordToPurge in dfArchiveRecordsToPurgeCollected:
+        if archiveRecordToPurge.IsPurged == False and archiveRecordToPurge.IsToBePurged == True:
+            bytesToPurge = archiveRecordToPurge.OriginalStagingFileSize
+            totalBytesToPurge = totalBytesToPurge + bytesToPurge
 
-    bytesToRetain = dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == false").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
-    if bytesToRetain:
-        totalBytesToRetain = totalBytesToRetain + bytesToRetain
+        if archiveRecordToPurge.IsPurged == False and archiveRecordToPurge.IsToBePurged == False:
+            bytesToRetain = archiveRecordToPurge.OriginalStagingFileSize
+            totalBytesToRetain = totalBytesToRetain + bytesToRetain
 
-    bytesPurged = dfArchiveRecordsToPurge.filter("IsPurged == true").groupBy().sum("OriginalStagingFileSize").collect()[0][0]
-    if bytesPurged:
-        totalBytesPurged = totalBytesPurged + bytesPurged
+        if archiveRecordToPurge.IsPurged == True:
+            bytesPurged = archiveRecordToPurge.OriginalStagingFileSize
+            totalBytesPurged = totalBytesPurged + bytesPurged
 
     print('> Bytes to purge: {size}'.format(size = convert_size_bytes(bytesToPurge)))
     print('> Bytes to retain: {size}'.format(size = convert_size_bytes(bytesToRetain)))
@@ -129,21 +135,22 @@ def purgeFromArchiveTable(fullyQualifiedName):
 
     if not isDryRun:   
         purgedArchiveLogEntries = None
-        for archiveRecordToPurge in dfArchiveRecordsToPurge.filter("IsPurged == false and IsToBePurged == true").collect():
-            try:            
-                print('.', end = "") 
-                dbutils.fs.rm(archiveRecordToPurge.ArchiveFilePath)
+        for archiveRecordToPurge in dfArchiveRecordsToPurgeCollected:
+            if archiveRecordToPurge.IsPurged == False and archiveRecordToPurge.IsToBePurged == True:
+                try:            
+                    print('.', end = "") 
+                    dbutils.fs.rm(archiveRecordToPurge.ArchiveFilePath)
 
-                if purgedArchiveLogEntries is None:
-                    purgedArchiveLogEntries = []
+                    if purgedArchiveLogEntries is None:
+                        purgedArchiveLogEntries = []
 
-                purgedArchiveLogEntries.append({
-                'ArchiveDatetimeUTC': archiveRecordToPurge.ArchiveDatetimeUTC,
-                'ArchiveFilePath': archiveRecordToPurge.ArchiveFilePath
-                })
-            except Exception as e:
-                print('> Could not purge file: {archiveFilePath}: {message}'.format(archiveFilePath = archiveRecordToPurge.ArchiveFilePath, message = e))
-                pass
+                    purgedArchiveLogEntries.append({
+                    'ArchiveDatetimeUTC': archiveRecordToPurge.ArchiveDatetimeUTC,
+                    'ArchiveFilePath': archiveRecordToPurge.ArchiveFilePath
+                    })
+                except Exception as e:
+                    print('> Could not purge file: {archiveFilePath}: {message}'.format(archiveFilePath = archiveRecordToPurge.ArchiveFilePath, message = e))
+                    pass
     
         if purgedArchiveLogEntries:
             temporaryViewName = str(uuid.uuid4()).replace('-', '_')
@@ -161,8 +168,16 @@ def purgeFromArchiveTable(fullyQualifiedName):
                             )
                     """.format(archiveTable = fullyQualifiedName, \
                                 temporaryView = temporaryViewName)
-            spark.sql(sql)
             print(" [Commit]")
+            spark.sql(sql)     
+
+            spark.catalog.dropTempView(temporaryViewName)
+            del purgedArchiveLogEntries  
+
+    del dfArchiveRecordsToPurgeCollected
+    del bytesToPurge
+    del bytesToRetain
+    del bytesPurged
 
 
 # COMMAND ----------
@@ -178,6 +193,7 @@ print('')
 print('Archive inclusion filter:')
 for tableNameFilter in tableNameStartsWith:
     print('> {name}'.format(name = tableNameFilter))
+print('')
 print('Archive exclusion filter:')
 for ignoreTableNameFilter in ignoreTableNameStartsWith:
     print('> {name}'.format(name = ignoreTableNameFilter))    
@@ -208,3 +224,5 @@ print('Archive purge summary: ')
 print('> Total bytes to purge: {size}'.format(size = convert_size_bytes(totalBytesToPurge)))
 print('> Total bytes to retain: {size}'.format(size = convert_size_bytes(totalBytesToRetain)))
 print('> Total bytes already purged: {size}'.format(size = convert_size_bytes(totalBytesPurged)))
+
+del dfTables
