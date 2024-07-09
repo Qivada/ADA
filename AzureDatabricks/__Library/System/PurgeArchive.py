@@ -37,6 +37,8 @@ totalBytesToPurge = 0
 totalBytesToRetain = 0
 totalBytesPurged = 0
 
+purgeSummaryLogs = []
+
 isDryRun: bool = True
 
 # COMMAND ----------
@@ -69,6 +71,7 @@ def purgeFromArchiveTable(fullyQualifiedName):
     global totalBytesToPurge
     global totalBytesToRetain
     global totalBytesPurged 
+    global purgeSummaryLogs
     global isDryRun
 
     bytesToPurge = 0
@@ -118,21 +121,32 @@ def purgeFromArchiveTable(fullyQualifiedName):
     dfArchiveRecordsToPurgeCollected = dfArchiveRecordsToPurge.collect()
     for archiveRecordToPurge in dfArchiveRecordsToPurgeCollected:
         if archiveRecordToPurge.IsPurged == False and archiveRecordToPurge.IsToBePurged == True:
-            bytesToPurge = archiveRecordToPurge.OriginalStagingFileSize
-            totalBytesToPurge = totalBytesToPurge + bytesToPurge
+            bytesToPurge = bytesToPurge + archiveRecordToPurge.OriginalStagingFileSize
 
         if archiveRecordToPurge.IsPurged == False and archiveRecordToPurge.IsToBePurged == False:
-            bytesToRetain = archiveRecordToPurge.OriginalStagingFileSize
-            totalBytesToRetain = totalBytesToRetain + bytesToRetain
+            bytesToRetain = bytesToRetain + archiveRecordToPurge.OriginalStagingFileSize
 
         if archiveRecordToPurge.IsPurged == True:
-            bytesPurged = archiveRecordToPurge.OriginalStagingFileSize
-            totalBytesPurged = totalBytesPurged + bytesPurged
+            bytesPurged = bytesPurged + archiveRecordToPurge.OriginalStagingFileSize
+
+    totalBytesToPurge = totalBytesToPurge + bytesToPurge
+    totalBytesToRetain = totalBytesToRetain + bytesToRetain
+    totalBytesPurged = totalBytesPurged + bytesPurged
 
     print('> Bytes to purge: {size}'.format(size = convert_size_bytes(bytesToPurge)))
     print('> Bytes to retain: {size}'.format(size = convert_size_bytes(bytesToRetain)))
     print('> Bytes already purged: {size}'.format(size = convert_size_bytes(bytesPurged)))
 
+    purgeSummaryLogs.append({
+        'ArchiveTable': fullyQualifiedName,
+        'BytesToPurge': int(bytesToPurge),
+        'BytesToRetain': int(bytesToRetain),
+        'BytesPurged': int(bytesPurged),
+        'BytesToPurgeText': convert_size_bytes(bytesToPurge),
+        'BytesToRetainText': convert_size_bytes(bytesToRetain),
+        'BytesPurgedText': convert_size_bytes(bytesPurged),
+    })
+    
     if not isDryRun:   
         purgedArchiveLogEntries = None
         for archiveRecordToPurge in dfArchiveRecordsToPurgeCollected:
@@ -226,3 +240,8 @@ print('> Total bytes to retain: {size}'.format(size = convert_size_bytes(totalBy
 print('> Total bytes already purged: {size}'.format(size = convert_size_bytes(totalBytesPurged)))
 
 del dfTables
+
+# COMMAND ----------
+
+dfPurgeSummaryLogs = spark.createDataFrame(pd.DataFrame(purgeSummaryLogs))
+display(dfPurgeSummaryLogs)
