@@ -4,7 +4,9 @@
 1. Register application (service principal) for ADA work flow. See instructions [here](https://github.com/Qivada/ADA/tree/main/AzureDeployment/register-app)
 2. Configure and grant admin consent to following "Power BI Service" delegated permissions for the service principal created on previous step
    - Workspace.ReadWrite.All
-     - Required to list lakehouses, warehouses, data pipelines and notebooks
+     - Required to check Git connection and to list lakehouses, warehouses, data pipelines and notebooks
+   - Workspace.GitCommit.All
+     - Required for committing changes to Git
    - Item.ReadWrite.All
      - Required to create data pipelines and notebooks
    - Item.Execute.All
