@@ -17,3 +17,6 @@
 2. Sign in to [Microsoft Fabric](https://app.fabric.microsoft.com/) and authorize the Microsoft Entra user to required workspace(s)
 4. Sign in to [Azure Portal](https://portal.azure.com/) and navigate to Microsoft Entra > Security > Named locations and include Qivada ADA static public IP address 20.229.33.209 to the the named locations
    - This allows Qivada ADA to programmatically sign in to Microsoft Fabric with the Microsoft Entra user without MFA verification
+
+## Library
+See implementation examples fron [library](https://github.com/Qivada/ADA/tree/main/AzureDeployment/microsoft-fabric/library) folder
