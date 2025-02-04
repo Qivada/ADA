@@ -25,7 +25,7 @@ SELECT DISTINCT
        ISNULL(T1.[ExtractColumns], '') AS [ExtractColumns],
        ISNULL(T1.[ExcludeColumns], '') AS [ExcludeColumns],
        ISNULL(T1.[DeleteFilterColumns], '') AS [DeleteFilterColumns]
-FROM   [adventureWorksLT].[silver] AS T1
+FROM   [name-of-source-system].[silver] AS T1
        CROSS APPLY STRING_SPLIT(T1.Tag, ',') AS T2
 WHERE  T1.[IsActive] = 1 AND
         (
