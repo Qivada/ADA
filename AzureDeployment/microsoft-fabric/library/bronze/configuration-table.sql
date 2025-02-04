@@ -11,7 +11,7 @@ CREATE TABLE [Configuration_Bronze].[name-of-source-system].[bronze]
 SELECT  DISTINCT 
         T1.[Query], 
         LOWER(T1.[Dataset]) AS [Dataset]
-FROM    [adventureWorksLT].[bronze] AS T1
+FROM    [name-of-source-system].[bronze] AS T1
         CROSS APPLY STRING_SPLIT(T1.Tag, ',') AS T2
 WHERE   T1.[IsActive] = 1 AND
         (
