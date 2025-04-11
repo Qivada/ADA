@@ -16,4 +16,4 @@
 See implementation examples fron [library](https://github.com/Qivada/ADA/tree/main/AzureDeployment/microsoft-fabric/library) folder
 
 ## Notice!
-As of tenant version 8.18.04 ADA no longer requires Entra user to connect with Microsoft Fabric. Work flow orchestrations are using service principal (SPN) authenthication with Microsoft Fabric starting 2025-04-11
+As of tenant version [8.18.04](https://github.com/Qivada/ADA/discussions/77) ADA no longer requires Entra user to connect with Microsoft Fabric. Work flow orchestrations are using service principal (SPN) authenthication with Microsoft Fabric starting 2025-04-11
