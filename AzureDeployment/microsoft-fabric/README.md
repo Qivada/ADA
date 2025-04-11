@@ -12,11 +12,8 @@
    - Item.Execute.All
      - Required to run data pipelines and notebooks
 
-## Authorize Microsoft Entra user to Microsoft Fabric
-1. Create new Microsoft Entra user for Qivada ADA to use for authentication
-2. Sign in to [Microsoft Fabric](https://app.fabric.microsoft.com/) and authorize the Microsoft Entra user to required workspace(s)
-4. Sign in to [Azure Portal](https://portal.azure.com/) and navigate to Microsoft Entra > Security > Named locations and include Qivada ADA static public IP address 20.229.33.209 to the the named locations
-   - This allows Qivada ADA to programmatically sign in to Microsoft Fabric with the Microsoft Entra user without MFA verification
-
 ## Library
 See implementation examples fron [library](https://github.com/Qivada/ADA/tree/main/AzureDeployment/microsoft-fabric/library) folder
+
+## Notice!
+As of tenant version 8.18.04 ADA no longer requires Entra user to connect with Microsoft Fabric. Work flow orchestrations are using service principal (SPN) authenthication with Microsoft Fabric starting 2025-04-11
