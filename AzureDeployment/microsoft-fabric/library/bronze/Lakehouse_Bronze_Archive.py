@@ -87,6 +87,61 @@ def archiveFile(file, archivePath):
     return archiveLogEntry
 
 
+# In[ ]:
+
+
+def tableMaintenance(__TABLE_FULLY_QUALIFIED_NAME:str) -> None:
+    """
+    Maintenance routine for specified delta table
+
+    Parameters
+    ----------
+    __TABLE_FULLY_QUALIFIED_NAME : str
+        Fully qualified table name e.g. \`schema\`.\`table\`
+
+    Returns
+    -------
+    None
+        Function does not return anything
+
+    Description
+    -----------
+    This function runs VACUUM and OPTIMIZE for specified delta table if previous VACUUM operation happened at least 14 days ago
+    """
+
+    spark.sql("""
+        DESCRIBE HISTORY {table}
+    """.format(table=__TABLE_FULLY_QUALIFIED_NAME)).createOrReplaceTempView("tableHistory")
+
+    try:
+        LastMaintenanceSinceDays = spark.sql("""
+            SELECT  IFNULL(DATEDIFF(current_timestamp, T1.lastMaintenceTimestamp), -1) AS LastMaintenanceSinceDays
+            FROM    (
+                        SELECT  MAX(timestamp) AS lastMaintenceTimestamp 
+                        FROM    tableHistory
+                        WHERE   operation in ('VACUUM END', 'VACUUM START')
+                    ) AS T1 
+        """).collect()[0][0]
+
+        if LastMaintenanceSinceDays < 0:
+            print("Table {table} requires initial maintenance".format(table=__TABLE_FULLY_QUALIFIED_NAME))
+        
+            # VACUUM and OPTIMIZE archive table
+            spark.sql("VACUUM {TABLE}".format(TABLE=__TABLE_FULLY_QUALIFIED_NAME))
+            spark.sql("OPTIMIZE {TABLE}".format(TABLE=__TABLE_FULLY_QUALIFIED_NAME))
+        elif LastMaintenanceSinceDays >= 14:
+            print("Table {table} does requires maintenance. Last maintenance occured {daysAgo} ago".format(table=__TABLE_FULLY_QUALIFIED_NAME, daysAgo=LastMaintenanceSinceDays))
+            
+            # VACUUM and OPTIMIZE archive table
+            spark.sql("VACUUM {TABLE}".format(TABLE=__TABLE_FULLY_QUALIFIED_NAME))
+            spark.sql("OPTIMIZE {TABLE}".format(TABLE=__TABLE_FULLY_QUALIFIED_NAME))
+        else:
+            print("Table {table} does not require maintenance. Last maintenance occured {daysAgo} ago".format(table=__TABLE_FULLY_QUALIFIED_NAME, daysAgo=LastMaintenanceSinceDays))
+    except:
+        print("Unable to determine table maintenance requirement")
+        pass
+
+
 # In[6]:
 
 
@@ -122,4 +177,6 @@ if archiveLogs:
                        .mode("append") \
                        .option("mergeSchema", "true") \
                        .saveAsTable(__BRONZE_TABLE_FULLY_QUALIFIED_NAME)
+
+    tableMaintenance(__BRONZE_TABLE_FULLY_QUALIFIED_NAME)
 
